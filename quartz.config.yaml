@@ -4,6 +4,8 @@ configuration:
   pageTitleSuffix: ""
   enableSPA: true
   enablePopovers: true
+  analytics:
+    provider: null
   locale: en-US
   baseUrl: saberzero1.github.io/obsidian-extended-metadatacache
   ignorePatterns:
@@ -91,11 +93,22 @@ plugins:
     options:
       renderEngine: katex
     order: 80
+  - source: github:quartz-community/citations
+    enabled: false
+    order: 85
   - source: github:quartz-community/hard-line-breaks
     enabled: true
     order: 90
+  - source: github:quartz-community/ox-hugo
+    enabled: false
+    order: 91
+  - source: github:quartz-community/roam
+    enabled: false
+    order: 92
   - source: github:quartz-community/remove-draft
     enabled: true
+  - source: github:quartz-community/explicit-publish
+    enabled: false
   - source: github:quartz-community/alias-redirects
     enabled: true
   - source: github:quartz-community/content-index
@@ -104,6 +117,8 @@ plugins:
       enableSiteMap: true
       enableRSS: true
   - source: github:quartz-community/favicon
+    enabled: true
+  - source: github:quartz-community/og-image
     enabled: true
   - source: github:quartz-community/cname
     enabled: true
@@ -115,25 +130,6 @@ plugins:
     enabled: true
   - source: github:quartz-community/tag-page
     enabled: true
-  - source: github:quartz-community/bases-page
-    enabled: true
-  - source: github:quartz-community/note-properties
-    enabled: true
-    options:
-      includeAll: false
-      includedProperties:
-        - description
-        - tags
-        - aliases
-      excludedProperties: []
-      hidePropertiesView: false
-      delimiters: ---
-      language: yaml
-    order: 5
-    layout:
-      position: beforeBody
-      priority: 15
-      display: all
   - source: github:quartz-community/explorer
     enabled: true
     layout:
@@ -167,6 +163,11 @@ plugins:
     layout:
       position: beforeBody
       priority: 20
+  - source: github:quartz-community/tag-list
+    enabled: false
+    layout:
+      position: beforeBody
+      priority: 30
   - source: github:quartz-community/page-title
     enabled: true
     layout:
@@ -190,12 +191,22 @@ plugins:
       position: beforeBody
       priority: 5
       condition: not-index
+  - source: github:quartz-community/comments
+    enabled: false
+    options:
+      provider: giscus
+      options: {}
+    layout:
+      position: afterBody
+      priority: 10
   - source: github:quartz-community/footer
     enabled: true
     options:
       links:
         GitHub: https://github.com/saberzero1/obsidian-extended-metadatacache
         NPM: https://www.npmjs.com/package/obsidian-extended-metadatacache
+  - source: github:quartz-community/recent-notes
+    enabled: false
   - source: github:quartz-community/spacer
     enabled: true
     options: {}
@@ -204,6 +215,51 @@ plugins:
       position: left
       priority: 25
       display: mobile-only
+  - source: github:quartz-community/bases-page
+    enabled: true
+    options: {}
+    order: 50
+  - source: github:quartz-community/note-properties
+    enabled: true
+    options:
+      includeAll: false
+      includedProperties:
+        - description
+        - tags
+        - aliases
+      excludedProperties: []
+      hidePropertiesView: false
+      delimiters: ---
+      language: yaml
+    order: 5
+    layout:
+      position: beforeBody
+      priority: 15
+      display: all
+  - source:
+      name: quartz-themes
+      repo: github:saberzero1/quartz-themes
+      subdir: plugin
+    enabled: true
+    options:
+      theme: claude-warm
+  - source: github:quartz-community/encrypted-pages
+    enabled: true
+    options:
+      visibility: icon
+      iterations: 600000
+      passwordField: password
+    order: 900
+    layout:
+      position: body
+      priority: 100
+      display: all
+  - source: github:quartz-community/stacked-pages
+    enabled: false
+    layout:
+      position: afterBody
+      priority: 50
+      display: all
 layout:
   groups:
     toolbar:
