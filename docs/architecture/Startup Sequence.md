@@ -1,6 +1,6 @@
 # Startup Sequence
 
-![[Startup Sequence.canvas]]
+![[Startup Diagram.canvas]]
 
 ## The problem
 

@@ -1,6 +1,6 @@
 # Architecture Overview
 
-![[Architecture Overview.canvas]]
+![[Architecture Diagram.canvas]]
 ## Core concept
 
 The library maintains **inverse indexes** — `Map<Key, Set<FileId>>` structures that answer "which files have this metadata?" instead of "what metadata does this file have?".

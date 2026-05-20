@@ -1,0 +1,25 @@
+{
+	"nodes":[
+		{"id":"group-indexes","type":"group","x":720,"y":-260,"width":670,"height":640,"label":"Inverse Indexes (Map<Key, Set<FileId>>)"},
+		{"id":"idb","type":"text","text":"## IndexedDB\n\nPer-file contributions persisted.\nDelta reconciliation on restart.\nDebounced + periodic flush.","x":180,"y":520,"width":310,"height":200,"color":"3"},
+		{"id":"contrib","type":"text","text":"## Contribution Tracker\n\nPer file: which keys this file contributes to each index.\nEnables O(contributions) removal on update.","x":180,"y":-40,"width":310,"height":200,"color":"1"},
+		{"id":"events","type":"text","text":"## Event Handlers\n\nRoute each event to the correct index update method","x":-220,"y":-40,"width":310,"height":200,"color":"2"},
+		{"id":"obsidian","type":"text","text":"## Obsidian MetadataCache\n\n`changed` · `deleted` · `resolve` · `rename`","x":-620,"y":-40,"width":310,"height":200,"color":"4"},
+		{"id":"backlinks","type":"text","text":"### Backlink Index\n\n`dest → sources`\n\nCombined + body + frontmatter","x":740,"y":-240,"width":310,"height":200},
+		{"id":"fm","type":"text","text":"### Frontmatter Index\n\n`key → files`\n`key+value → files`","x":740,"y":-40,"width":310,"height":200},
+		{"id":"embeds","type":"text","text":"### Embed Index\n\n`dest → embedders`","x":740,"y":160,"width":310,"height":200},
+		{"id":"headings","type":"text","text":"### Heading Index\n\n`heading → files`","x":1050,"y":-240,"width":310,"height":200},
+		{"id":"tags","type":"text","text":"### Tag Index\n\n`tag → files`\n\nCombined + body + frontmatter","x":1050,"y":-40,"width":310,"height":200},
+		{"id":"other","type":"text","text":"### Also: aliases · blocks · tasks · unresolved backlinks","x":1050,"y":160,"width":310,"height":200},
+		{"id":"intern","type":"text","text":"## File Intern\n\npath ↔ numeric ID\n`Set<number>` in all indexes","x":740,"y":520,"width":310,"height":200,"color":"6"},
+		{"id":"query","type":"text","text":"## Query API\n\n`getFilesWithTag()`\n`getBacklinksForFile()`\n... 25+ methods","x":1360,"y":520,"width":310,"height":200,"color":"5"}
+	],
+	"edges":[
+		{"id":"e1","fromNode":"obsidian","fromSide":"right","toNode":"events","toSide":"left"},
+		{"id":"e2","fromNode":"events","fromSide":"right","toNode":"contrib","toSide":"left"},
+		{"id":"e6","fromNode":"contrib","fromSide":"right","toNode":"group-indexes","toSide":"left"},
+		{"id":"e7","fromNode":"intern","fromSide":"left","toNode":"idb","toSide":"right","label":"persist"},
+		{"id":"e8","fromNode":"intern","fromSide":"right","toNode":"query","toSide":"left","label":"resolve paths"},
+		{"id":"e9","fromNode":"contrib","fromSide":"bottom","toNode":"idb","toSide":"top","label":"flush"}
+	]
+}
