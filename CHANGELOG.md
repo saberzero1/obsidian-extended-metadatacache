@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1
+
+### Changed
+
+- Updated README with two-phase startup sequence documentation, normalization details (Date, nested objects, embed subpaths, canvas sources), and development/testing guide
+
 ## 0.2.0
 
 ### Fixed
@@ -15,10 +21,6 @@
 - E2E test suite using `wdio-obsidian-service` — runs a real Obsidian instance against a test vault and cross-verifies every index type against native MetadataCache
 - NixOS `flake.nix` for local development with E2E support
 - CI workflow for E2E tests on Ubuntu with Xvfb
-
-### Changed
-
-- Updated README with two-phase startup sequence documentation, normalization details (Date, nested objects, embed subpaths, canvas sources), and development/testing guide
 
 ## 0.1.0
 
