@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.4.0
+
+### Added
+
+- **Task indexing**: `getFilesWithTasks()`, `getFilesWithTaskStatus(status)`, `getAllTaskStatusesWithFiles()`, `getFilesWithOpenTasks()`, `getFilesWithCompletedTasks()` — index `ListItemCache.task` status characters with support for single or array queries
+- **Separated tag lookups**: `getFilesWithTagInBody(tag)` and `getFilesWithTagInFrontmatter(tag)` — distinguish inline `#tag` in note body from `tags:` in YAML frontmatter
+- **Separated backlink lookups**: `getBacklinksFromBody(file)` and `getBacklinksFromFrontmatter(file)` — distinguish `[[links]]` in note body from `[[links]]` in YAML property values, determined by cross-referencing `CachedMetadata.frontmatterLinks`
+
+### Fixed
+
+- Race condition where `buildInitialIndex` (async, yields to main) could interleave with `finalizeLinks`, causing the `resolve` event handler to overwrite separated backlink contributions. Fixed with a completion gate that waits for both `initializeAndWaitForLinks` and the second `resolved` event.
+
+### Added
+
+- Comprehensive documentation site (42+ pages) deployed via Quartz v5 to GitHub Pages — API reference, architecture decisions, Obsidian quirks, canvas diagrams, Bases API reference table
+- CI workflow for automatic docs deployment on push to `docs/`
+- Prettier configuration for consistent code formatting
+
+### Changed
+
+- IndexedDB persistence schema now includes `bodyTags`, `frontmatterTags`, `bodyBacklinks`, `frontmatterBacklinks`, and `taskStatuses` contribution fields
+
 ## 0.3.0
 
 ### Breaking Changes
