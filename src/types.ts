@@ -9,14 +9,19 @@ export type FileId = number;
 /** Category keys for the different inverse index types. */
 export type IndexType =
   | "tags"
+  | "bodyTags"
+  | "frontmatterTags"
   | "backlinks"
+  | "bodyBacklinks"
+  | "frontmatterBacklinks"
   | "unresolvedBacklinks"
   | "embeds"
   | "headings"
   | "frontmatterKeys"
   | "frontmatterValues"
   | "aliases"
-  | "blocks";
+  | "blocks"
+  | "taskStatuses";
 
 /**
  * Per-file record of the keys this file contributes to each index.
@@ -68,7 +73,11 @@ export interface SerializedContribRecord {
   id: FileId;
   mtime: number;
   tags?: string[];
+  bodyTags?: string[];
+  frontmatterTags?: string[];
   backlinks?: string[];
+  bodyBacklinks?: string[];
+  frontmatterBacklinks?: string[];
   unresolvedBacklinks?: string[];
   embeds?: string[];
   headings?: string[];
@@ -76,6 +85,7 @@ export interface SerializedContribRecord {
   frontmatterValues?: string[];
   aliases?: string[];
   blocks?: string[];
+  taskStatuses?: string[];
 }
 
 /** @internal Intern record for IndexedDB storage. */
@@ -97,14 +107,21 @@ export interface ExtendedMetadataCacheAPI {
    */
   readonly isReady: boolean;
 
-  /** Get all files that contain the given tag (including frontmatter tags). */
+  /** Get all files that contain the given tag (body + frontmatter combined). */
   getFilesWithTag(tag: string): ReadonlySet<string>;
-
-  /** Get all tags across the vault with their file sets. */
+  /** Get all files that contain the given tag in the note body only. */
+  getFilesWithTagInBody(tag: string): ReadonlySet<string>;
+  /** Get all files that contain the given tag in frontmatter only. */
+  getFilesWithTagInFrontmatter(tag: string): ReadonlySet<string>;
+  /** Get all tags across the vault with their file sets (combined). */
   getAllTagsWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
-  /** Get all files that link TO the given file. Accepts TFile or vault-absolute path. */
+  /** Get all files that link TO the given file (body + frontmatter combined). */
   getBacklinksForFile(file: TFile | string): ReadonlySet<string>;
+  /** Get all files that link TO the given file from note body only. */
+  getBacklinksFromBody(file: TFile | string): ReadonlySet<string>;
+  /** Get all files that link TO the given file from frontmatter only. */
+  getBacklinksFromFrontmatter(file: TFile | string): ReadonlySet<string>;
 
   /** Get all files with unresolved links matching the given name. */
   getUnresolvedBacklinks(destName: string): ReadonlySet<string>;
@@ -114,37 +131,37 @@ export interface ExtendedMetadataCacheAPI {
 
   /** Get all files that contain a heading matching the given text (case-insensitive). */
   getFilesWithHeading(heading: string): ReadonlySet<string>;
-
   /** Get all headings across the vault with their file sets. */
   getAllHeadingsWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
   /** Get all files that have the given frontmatter key (regardless of value). */
   getFilesWithFrontmatterKey(key: string): ReadonlySet<string>;
-
   /** Get all files where frontmatter[key] equals the given value. */
-  getFilesWithFrontmatterValue(
-    key: string,
-    value: unknown,
-  ): ReadonlySet<string>;
-
+  getFilesWithFrontmatterValue(key: string, value: unknown): ReadonlySet<string>;
   /** Get all frontmatter keys across the vault with their file sets. */
   getAllFrontmatterKeysWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
   /** Get all files that have the given alias. */
   getFilesWithAlias(alias: string): ReadonlySet<string>;
-
   /** Get all aliases across the vault with their file sets. */
   getAllAliasesWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
   /** Get the file that defines the given block ID, or null. */
   getFileWithBlockId(blockId: string): TFile | null;
 
+  /** Get all files that contain any tasks. */
+  getFilesWithTasks(): ReadonlySet<string>;
+  /** Get files with tasks matching the given status character(s). */
+  getFilesWithTaskStatus(status: string | string[]): ReadonlySet<string>;
+  /** Get all task status characters across the vault with their file sets. */
+  getAllTaskStatusesWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
+  /** Get files with incomplete tasks (status === " "). */
+  getFilesWithOpenTasks(): ReadonlySet<string>;
+  /** Get files with completed tasks (any non-space status per Obsidian semantics). */
+  getFilesWithCompletedTasks(): ReadonlySet<string>;
+
   on(name: "ready", callback: () => void, ctx?: unknown): EventRef;
-  on(
-    name: "file-updated",
-    callback: (path: string) => void,
-    ctx?: unknown,
-  ): EventRef;
+  on(name: "file-updated", callback: (path: string) => void, ctx?: unknown): EventRef;
   on(
     name: "rebuild-progress",
     callback: (progress: BuildProgress) => void,

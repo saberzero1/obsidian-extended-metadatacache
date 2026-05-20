@@ -1,15 +1,10 @@
-import type {
-  App,
-  CachedMetadata,
-  EventRef,
-  TAbstractFile,
-  TFile,
-} from "obsidian";
+import type { App, CachedMetadata, EventRef, TAbstractFile, TFile } from "obsidian";
 import {
   Events,
   getAllTags,
   getLinkpath,
   parseFrontMatterAliases,
+  parseFrontMatterTags,
 } from "obsidian";
 import { FileIntern } from "./file-intern.js";
 import { InverseIndex, UniqueInverseIndex } from "./inverse-index.js";
@@ -37,10 +32,7 @@ const EMPTY_PATH_MAP: ReadonlyMap<string, ReadonlySet<string>> = Object.freeze(
   new Map<string, ReadonlySet<string>>(),
 );
 
-export class ExtendedMetadataCache
-  extends Events
-  implements ExtendedMetadataCacheAPI
-{
+export class ExtendedMetadataCache extends Events implements ExtendedMetadataCacheAPI {
   private readonly app: App;
   private readonly files: FileIntern;
   private readonly contributions = new Map<FileId, FileContributions>();
@@ -48,7 +40,11 @@ export class ExtendedMetadataCache
   private readonly chunkSize: number;
 
   private readonly tagIndex = new InverseIndex();
+  private readonly bodyTagIndex = new InverseIndex();
+  private readonly frontmatterTagIndex = new InverseIndex();
   private readonly backlinkIndex = new InverseIndex();
+  private readonly bodyBacklinkIndex = new InverseIndex();
+  private readonly frontmatterBacklinkIndex = new InverseIndex();
   private readonly unresolvedBacklinkIndex = new InverseIndex();
   private readonly embedIndex = new InverseIndex();
   private readonly headingIndex = new InverseIndex();
@@ -56,6 +52,7 @@ export class ExtendedMetadataCache
   private readonly frontmatterValueIndex = new InverseIndex();
   private readonly aliasIndex = new InverseIndex();
   private readonly blockIndex = new UniqueInverseIndex();
+  private readonly taskStatusIndex = new InverseIndex();
 
   private readonly eventRefs: EventRef[] = [];
   private _isReady = false;
@@ -77,11 +74,7 @@ export class ExtendedMetadataCache
   }
 
   on(name: "ready", callback: () => void, ctx?: unknown): EventRef;
-  on(
-    name: "file-updated",
-    callback: (path: string) => void,
-    ctx?: unknown,
-  ): EventRef;
+  on(name: "file-updated", callback: (path: string) => void, ctx?: unknown): EventRef;
   on(
     name: "rebuild-progress",
     callback: (progress: BuildProgress) => void,
@@ -98,10 +91,8 @@ export class ExtendedMetadataCache
     this.files = new FileIntern();
     this.chunkSize = options?.chunkSize ?? DEFAULT_CHUNK_SIZE;
     this.persistEnabled = options?.persist !== false;
-    this.flushDebounceMs =
-      options?.flushDebounceMs ?? DEFAULT_FLUSH_DEBOUNCE_MS;
-    this.flushIntervalMs =
-      options?.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS;
+    this.flushDebounceMs = options?.flushDebounceMs ?? DEFAULT_FLUSH_DEBOUNCE_MS;
+    this.flushIntervalMs = options?.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS;
     this.waitForMetadataCacheThenInitialize();
   }
 
@@ -119,23 +110,33 @@ export class ExtendedMetadataCache
     }
 
     let initialBuildDone = false;
+    let initialBuildComplete = false;
+    let secondResolvedFired = false;
+
+    const tryFinalize = () => {
+      if (initialBuildComplete && secondResolvedFired) {
+        this.finalizeLinks();
+      }
+    };
 
     const onResolved = () => {
       if (!initialBuildDone) {
         initialBuildDone = true;
-        this.initializeAndWaitForLinks(onResolved);
+        this.initializeAndWaitForLinks().then(() => {
+          initialBuildComplete = true;
+          tryFinalize();
+        });
       } else {
         this.app.metadataCache.off("resolved", onResolved);
-        this.finalizeLinks();
+        secondResolvedFired = true;
+        tryFinalize();
       }
     };
 
     this.app.metadataCache.on("resolved", onResolved);
   }
 
-  private async initializeAndWaitForLinks(
-    _onResolved: () => void,
-  ): Promise<void> {
+  private async initializeAndWaitForLinks(): Promise<void> {
     let loadedFromDb = false;
 
     if (this.persistEnabled) {
@@ -236,10 +237,7 @@ export class ExtendedMetadataCache
     }
   }
 
-  private restoreFromSnapshot(
-    interns: InternRecord[],
-    contribs: SerializedContribRecord[],
-  ): void {
+  private restoreFromSnapshot(interns: InternRecord[], contribs: SerializedContribRecord[]): void {
     for (const { path, id } of interns) {
       this.files.internWithId(path, id);
     }
@@ -252,19 +250,28 @@ export class ExtendedMetadataCache
     }
   }
 
-  private rebuildIndexesFromContributions(
-    fileId: FileId,
-    contrib: FileContributions,
-  ): void {
+  private rebuildIndexesFromContributions(fileId: FileId, contrib: FileContributions): void {
     if (contrib.tags) {
       for (const key of contrib.tags) this.tagIndex.add(key, fileId);
+    }
+    if (contrib.bodyTags) {
+      for (const key of contrib.bodyTags) this.bodyTagIndex.add(key, fileId);
+    }
+    if (contrib.frontmatterTags) {
+      for (const key of contrib.frontmatterTags) this.frontmatterTagIndex.add(key, fileId);
     }
     if (contrib.backlinks) {
       for (const key of contrib.backlinks) this.backlinkIndex.add(key, fileId);
     }
+    if (contrib.bodyBacklinks) {
+      for (const key of contrib.bodyBacklinks) this.bodyBacklinkIndex.add(key, fileId);
+    }
+    if (contrib.frontmatterBacklinks) {
+      for (const key of contrib.frontmatterBacklinks)
+        this.frontmatterBacklinkIndex.add(key, fileId);
+    }
     if (contrib.unresolvedBacklinks) {
-      for (const key of contrib.unresolvedBacklinks)
-        this.unresolvedBacklinkIndex.add(key, fileId);
+      for (const key of contrib.unresolvedBacklinks) this.unresolvedBacklinkIndex.add(key, fileId);
     }
     if (contrib.embeds) {
       for (const key of contrib.embeds) this.embedIndex.add(key, fileId);
@@ -273,18 +280,19 @@ export class ExtendedMetadataCache
       for (const key of contrib.headings) this.headingIndex.add(key, fileId);
     }
     if (contrib.frontmatterKeys) {
-      for (const key of contrib.frontmatterKeys)
-        this.frontmatterKeyIndex.add(key, fileId);
+      for (const key of contrib.frontmatterKeys) this.frontmatterKeyIndex.add(key, fileId);
     }
     if (contrib.frontmatterValues) {
-      for (const key of contrib.frontmatterValues)
-        this.frontmatterValueIndex.add(key, fileId);
+      for (const key of contrib.frontmatterValues) this.frontmatterValueIndex.add(key, fileId);
     }
     if (contrib.aliases) {
       for (const key of contrib.aliases) this.aliasIndex.add(key, fileId);
     }
     if (contrib.blocks) {
       for (const key of contrib.blocks) this.blockIndex.set(key, fileId);
+    }
+    if (contrib.taskStatuses) {
+      for (const key of contrib.taskStatuses) this.taskStatusIndex.add(key, fileId);
     }
   }
 
@@ -341,11 +349,7 @@ export class ExtendedMetadataCache
     }
   }
 
-  private reindexFile(
-    path: string,
-    cache: CachedMetadata,
-    mtime: number,
-  ): void {
+  private reindexFile(path: string, cache: CachedMetadata, mtime: number): void {
     const fileId = this.files.intern(path);
     this.removeCacheContributions(fileId);
     const contrib = this.getOrCreateContributions(fileId);
@@ -356,6 +360,7 @@ export class ExtendedMetadataCache
     this.indexFrontmatter(fileId, cache, contrib);
     this.indexAliases(fileId, cache, contrib);
     this.indexBlocks(fileId, cache, contrib);
+    this.indexTasks(fileId, cache, contrib);
     this.mtimes.set(fileId, mtime);
     this.markDirty(fileId, path);
   }
@@ -365,7 +370,7 @@ export class ExtendedMetadataCache
     this.removeLinkContributions(fileId);
     const contrib = this.getOrCreateContributions(fileId);
 
-    this.indexBacklinks(fileId, path, contrib);
+    this.indexBacklinksWithSeparation(fileId, path, contrib);
     this.indexUnresolvedBacklinks(fileId, path, contrib);
     this.markDirty(fileId, path);
   }
@@ -407,11 +412,15 @@ export class ExtendedMetadataCache
 
   private rebuildAllLinkIndexes(): void {
     this.backlinkIndex.clear();
+    this.bodyBacklinkIndex.clear();
+    this.frontmatterBacklinkIndex.clear();
     this.unresolvedBacklinkIndex.clear();
     this.embedIndex.clear();
 
     for (const [, contrib] of this.contributions) {
       contrib.backlinks = undefined;
+      contrib.bodyBacklinks = undefined;
+      contrib.frontmatterBacklinks = undefined;
       contrib.unresolvedBacklinks = undefined;
       contrib.embeds = undefined;
     }
@@ -424,14 +433,44 @@ export class ExtendedMetadataCache
       const contrib = this.getOrCreateContributions(fileId);
 
       const dests = resolvedLinks[sourcePath];
-      if (dests) {
-        const backlinkKeys = new Set<string>();
-        for (const destPath of Object.keys(dests)) {
-          backlinkKeys.add(destPath);
-          this.backlinkIndex.add(destPath, fileId);
+      if (!dests) continue;
+
+      const fmDestCounts = new Map<string, number>();
+      const sourceFile = this.app.vault.getFileByPath(sourcePath);
+      if (sourceFile) {
+        const cache = this.app.metadataCache.getFileCache(sourceFile as TFile);
+        if (cache?.frontmatterLinks) {
+          for (const fmLink of cache.frontmatterLinks) {
+            const linkpath = getLinkpath(fmLink.link);
+            const dest = this.app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
+            if (dest) fmDestCounts.set(dest.path, (fmDestCounts.get(dest.path) ?? 0) + 1);
+          }
         }
-        contrib.backlinks = backlinkKeys;
       }
+
+      const backlinkKeys = new Set<string>();
+      const bodyKeys = new Set<string>();
+      const fmKeys = new Set<string>();
+
+      for (const destPath of Object.keys(dests)) {
+        backlinkKeys.add(destPath);
+        this.backlinkIndex.add(destPath, fileId);
+
+        const fmCount = fmDestCounts.get(destPath) ?? 0;
+        const totalCount = dests[destPath] ?? 0;
+
+        if (fmCount > 0) {
+          fmKeys.add(destPath);
+          this.frontmatterBacklinkIndex.add(destPath, fileId);
+        }
+        if (totalCount > fmCount || fmCount === 0) {
+          bodyKeys.add(destPath);
+          this.bodyBacklinkIndex.add(destPath, fileId);
+        }
+      }
+      contrib.backlinks = backlinkKeys;
+      contrib.bodyBacklinks = bodyKeys;
+      contrib.frontmatterBacklinks = fmKeys;
     }
 
     for (const sourcePath of Object.keys(unresolvedLinks)) {
@@ -461,10 +500,7 @@ export class ExtendedMetadataCache
       const embedKeys = new Set<string>();
       for (const embed of cache.embeds) {
         const linkpath = getLinkpath(embed.link);
-        const dest = this.app.metadataCache.getFirstLinkpathDest(
-          linkpath,
-          file.path,
-        );
+        const dest = this.app.metadataCache.getFirstLinkpathDest(linkpath, file.path);
         const destPath = dest?.path ?? linkpath;
         embedKeys.add(destPath);
         this.embedIndex.add(destPath, fileId);
@@ -484,6 +520,7 @@ export class ExtendedMetadataCache
     this.indexFrontmatter(fileId, cache, contrib);
     this.indexAliases(fileId, cache, contrib);
     this.indexBlocks(fileId, cache, contrib);
+    this.indexTasks(fileId, cache, contrib);
   }
 
   private indexFileLinks(path: string): void {
@@ -494,28 +531,53 @@ export class ExtendedMetadataCache
     this.indexUnresolvedBacklinks(fileId, path, contrib);
   }
 
-  private indexTags(
-    fileId: FileId,
-    cache: CachedMetadata,
-    contrib: FileContributions,
-  ): void {
-    const tags = getAllTags(cache);
-    if (!tags) return;
+  private indexTags(fileId: FileId, cache: CachedMetadata, contrib: FileContributions): void {
+    const allTags = getAllTags(cache);
+    if (!allTags) return;
 
     const tagKeys = new Set<string>();
-    for (const tag of tags) {
+    for (const tag of allTags) {
       const normalized = tag.toLowerCase();
       tagKeys.add(normalized);
       this.tagIndex.add(normalized, fileId);
     }
     contrib.tags = tagKeys;
+
+    const bodyTagKeys = new Set<string>();
+    if (cache.tags) {
+      for (const tagCache of cache.tags) {
+        const normalized = tagCache.tag.toLowerCase();
+        bodyTagKeys.add(normalized);
+        this.bodyTagIndex.add(normalized, fileId);
+      }
+    }
+    contrib.bodyTags = bodyTagKeys;
+
+    const fmTagKeys = new Set<string>();
+    const fmTags = parseFrontMatterTags(cache.frontmatter ?? null);
+    if (fmTags) {
+      for (const tag of fmTags) {
+        const normalized = tag.toLowerCase();
+        fmTagKeys.add(normalized);
+        this.frontmatterTagIndex.add(normalized, fileId);
+      }
+    }
+    contrib.frontmatterTags = fmTagKeys;
   }
 
-  private indexEmbeds(
-    fileId: FileId,
-    cache: CachedMetadata,
-    contrib: FileContributions,
-  ): void {
+  private indexTasks(fileId: FileId, cache: CachedMetadata, contrib: FileContributions): void {
+    if (!cache.listItems) return;
+
+    const statusKeys = new Set<string>();
+    for (const item of cache.listItems) {
+      if (item.task === undefined) continue;
+      statusKeys.add(item.task);
+      this.taskStatusIndex.add(item.task, fileId);
+    }
+    contrib.taskStatuses = statusKeys;
+  }
+
+  private indexEmbeds(fileId: FileId, cache: CachedMetadata, contrib: FileContributions): void {
     if (!cache.embeds) return;
 
     const embedKeys = new Set<string>();
@@ -532,11 +594,7 @@ export class ExtendedMetadataCache
     contrib.embeds = embedKeys;
   }
 
-  private indexHeadings(
-    fileId: FileId,
-    cache: CachedMetadata,
-    contrib: FileContributions,
-  ): void {
+  private indexHeadings(fileId: FileId, cache: CachedMetadata, contrib: FileContributions): void {
     if (!cache.headings) return;
 
     const headingKeys = new Set<string>();
@@ -575,11 +633,7 @@ export class ExtendedMetadataCache
     contrib.frontmatterValues = fmValues;
   }
 
-  private indexAliases(
-    fileId: FileId,
-    cache: CachedMetadata,
-    contrib: FileContributions,
-  ): void {
+  private indexAliases(fileId: FileId, cache: CachedMetadata, contrib: FileContributions): void {
     const aliases = parseFrontMatterAliases(cache.frontmatter ?? null);
     if (!aliases) return;
 
@@ -592,11 +646,7 @@ export class ExtendedMetadataCache
     contrib.aliases = aliasKeys;
   }
 
-  private indexBlocks(
-    fileId: FileId,
-    cache: CachedMetadata,
-    contrib: FileContributions,
-  ): void {
+  private indexBlocks(fileId: FileId, cache: CachedMetadata, contrib: FileContributions): void {
     if (!cache.blocks) return;
 
     const blockKeys = new Set<string>();
@@ -607,11 +657,7 @@ export class ExtendedMetadataCache
     contrib.blocks = blockKeys;
   }
 
-  private indexBacklinks(
-    fileId: FileId,
-    sourcePath: string,
-    contrib: FileContributions,
-  ): void {
+  private indexBacklinks(fileId: FileId, sourcePath: string, contrib: FileContributions): void {
     const resolvedDests = this.app.metadataCache.resolvedLinks[sourcePath];
     if (!resolvedDests) return;
 
@@ -640,11 +686,7 @@ export class ExtendedMetadataCache
     contrib.unresolvedBacklinks = unresolvedKeys;
   }
 
-  private updateFileFromCache(
-    path: string,
-    cache: CachedMetadata,
-    mtime: number,
-  ): void {
+  private updateFileFromCache(path: string, cache: CachedMetadata, mtime: number): void {
     const fileId = this.files.intern(path);
     this.removeCacheContributions(fileId);
     const contrib = this.getOrCreateContributions(fileId);
@@ -655,6 +697,7 @@ export class ExtendedMetadataCache
     this.indexFrontmatter(fileId, cache, contrib);
     this.indexAliases(fileId, cache, contrib);
     this.indexBlocks(fileId, cache, contrib);
+    this.indexTasks(fileId, cache, contrib);
     this.mtimes.set(fileId, mtime);
     this.markDirty(fileId, path);
 
@@ -668,11 +711,58 @@ export class ExtendedMetadataCache
     this.removeLinkContributions(fileId);
     const contrib = this.getOrCreateContributions(fileId);
 
-    this.indexBacklinks(fileId, path, contrib);
+    this.indexBacklinksWithSeparation(fileId, path, contrib);
     this.indexUnresolvedBacklinks(fileId, path, contrib);
     this.markDirty(fileId, path);
 
     this.trigger("file-updated", path);
+  }
+
+  private indexBacklinksWithSeparation(
+    fileId: FileId,
+    sourcePath: string,
+    contrib: FileContributions,
+  ): void {
+    const resolvedDests = this.app.metadataCache.resolvedLinks[sourcePath];
+    if (!resolvedDests) return;
+
+    const fmDestCounts = new Map<string, number>();
+    const sourceFile = this.app.vault.getFileByPath(sourcePath);
+    if (sourceFile) {
+      const cache = this.app.metadataCache.getFileCache(sourceFile as TFile);
+      if (cache?.frontmatterLinks) {
+        for (const fmLink of cache.frontmatterLinks) {
+          const linkpath = getLinkpath(fmLink.link);
+          const dest = this.app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
+          if (dest) fmDestCounts.set(dest.path, (fmDestCounts.get(dest.path) ?? 0) + 1);
+        }
+      }
+    }
+
+    const backlinkKeys = new Set<string>();
+    const bodyKeys = new Set<string>();
+    const fmKeys = new Set<string>();
+
+    for (const destPath of Object.keys(resolvedDests)) {
+      backlinkKeys.add(destPath);
+      this.backlinkIndex.add(destPath, fileId);
+
+      const fmCount = fmDestCounts.get(destPath) ?? 0;
+      const totalCount = resolvedDests[destPath] ?? 0;
+
+      if (fmCount > 0) {
+        fmKeys.add(destPath);
+        this.frontmatterBacklinkIndex.add(destPath, fileId);
+      }
+      if (totalCount > fmCount || fmCount === 0) {
+        bodyKeys.add(destPath);
+        this.bodyBacklinkIndex.add(destPath, fileId);
+      }
+    }
+
+    contrib.backlinks = backlinkKeys;
+    contrib.bodyBacklinks = bodyKeys;
+    contrib.frontmatterBacklinks = fmKeys;
   }
 
   private removeFile(path: string): void {
@@ -705,10 +795,7 @@ export class ExtendedMetadataCache
       contrib.backlinks = undefined;
     }
     if (contrib.unresolvedBacklinks) {
-      this.unresolvedBacklinkIndex.removeFromKeys(
-        contrib.unresolvedBacklinks,
-        fileId,
-      );
+      this.unresolvedBacklinkIndex.removeFromKeys(contrib.unresolvedBacklinks, fileId);
       contrib.unresolvedBacklinks = undefined;
     }
 
@@ -723,42 +810,45 @@ export class ExtendedMetadataCache
     if (!contrib) return;
 
     if (contrib.tags) this.tagIndex.removeFromKeys(contrib.tags, fileId);
+    if (contrib.bodyTags) this.bodyTagIndex.removeFromKeys(contrib.bodyTags, fileId);
+    if (contrib.frontmatterTags)
+      this.frontmatterTagIndex.removeFromKeys(contrib.frontmatterTags, fileId);
     if (contrib.embeds) this.embedIndex.removeFromKeys(contrib.embeds, fileId);
-    if (contrib.headings)
-      this.headingIndex.removeFromKeys(contrib.headings, fileId);
+    if (contrib.headings) this.headingIndex.removeFromKeys(contrib.headings, fileId);
     if (contrib.frontmatterKeys)
       this.frontmatterKeyIndex.removeFromKeys(contrib.frontmatterKeys, fileId);
     if (contrib.frontmatterValues)
-      this.frontmatterValueIndex.removeFromKeys(
-        contrib.frontmatterValues,
-        fileId,
-      );
-    if (contrib.aliases)
-      this.aliasIndex.removeFromKeys(contrib.aliases, fileId);
+      this.frontmatterValueIndex.removeFromKeys(contrib.frontmatterValues, fileId);
+    if (contrib.aliases) this.aliasIndex.removeFromKeys(contrib.aliases, fileId);
     if (contrib.blocks) this.blockIndex.removeKeys(contrib.blocks);
+    if (contrib.taskStatuses) this.taskStatusIndex.removeFromKeys(contrib.taskStatuses, fileId);
 
     contrib.tags = undefined;
+    contrib.bodyTags = undefined;
+    contrib.frontmatterTags = undefined;
     contrib.embeds = undefined;
     contrib.headings = undefined;
     contrib.frontmatterKeys = undefined;
     contrib.frontmatterValues = undefined;
     contrib.aliases = undefined;
     contrib.blocks = undefined;
+    contrib.taskStatuses = undefined;
   }
 
   private removeLinkContributions(fileId: FileId): void {
     const contrib = this.contributions.get(fileId);
     if (!contrib) return;
 
-    if (contrib.backlinks)
-      this.backlinkIndex.removeFromKeys(contrib.backlinks, fileId);
+    if (contrib.backlinks) this.backlinkIndex.removeFromKeys(contrib.backlinks, fileId);
+    if (contrib.bodyBacklinks) this.bodyBacklinkIndex.removeFromKeys(contrib.bodyBacklinks, fileId);
+    if (contrib.frontmatterBacklinks)
+      this.frontmatterBacklinkIndex.removeFromKeys(contrib.frontmatterBacklinks, fileId);
     if (contrib.unresolvedBacklinks)
-      this.unresolvedBacklinkIndex.removeFromKeys(
-        contrib.unresolvedBacklinks,
-        fileId,
-      );
+      this.unresolvedBacklinkIndex.removeFromKeys(contrib.unresolvedBacklinks, fileId);
 
     contrib.backlinks = undefined;
+    contrib.bodyBacklinks = undefined;
+    contrib.frontmatterBacklinks = undefined;
     contrib.unresolvedBacklinks = undefined;
   }
 
@@ -826,12 +916,7 @@ export class ExtendedMetadataCache
     this.deletedFileIds.clear();
     this.deletedPaths.clear();
 
-    const ok = await this.store.flush(
-      dirtyInterns,
-      dirtyContribs,
-      deletedIds,
-      deletedPathsArr,
-    );
+    const ok = await this.store.flush(dirtyInterns, dirtyContribs, deletedIds, deletedPathsArr);
     if (!ok) {
       this.disablePersistence();
     }
@@ -849,9 +934,7 @@ export class ExtendedMetadataCache
     return this.files.resolvePaths(ids);
   }
 
-  private resolveFullIndex(
-    index: InverseIndex,
-  ): ReadonlyMap<string, ReadonlySet<string>> {
+  private resolveFullIndex(index: InverseIndex): ReadonlyMap<string, ReadonlySet<string>> {
     const entries = index.entries();
     if (entries.size === 0) return EMPTY_PATH_MAP;
 
@@ -863,10 +946,18 @@ export class ExtendedMetadataCache
   }
 
   getFilesWithTag(tag: string): ReadonlySet<string> {
-    const normalized = tag.startsWith("#")
-      ? tag.toLowerCase()
-      : `#${tag.toLowerCase()}`;
+    const normalized = tag.startsWith("#") ? tag.toLowerCase() : `#${tag.toLowerCase()}`;
     return this.resolveIndex(this.tagIndex, normalized);
+  }
+
+  getFilesWithTagInBody(tag: string): ReadonlySet<string> {
+    const normalized = tag.startsWith("#") ? tag.toLowerCase() : `#${tag.toLowerCase()}`;
+    return this.resolveIndex(this.bodyTagIndex, normalized);
+  }
+
+  getFilesWithTagInFrontmatter(tag: string): ReadonlySet<string> {
+    const normalized = tag.startsWith("#") ? tag.toLowerCase() : `#${tag.toLowerCase()}`;
+    return this.resolveIndex(this.frontmatterTagIndex, normalized);
   }
 
   getAllTagsWithFiles(): ReadonlyMap<string, ReadonlySet<string>> {
@@ -878,11 +969,18 @@ export class ExtendedMetadataCache
     return this.resolveIndex(this.backlinkIndex, destPath);
   }
 
+  getBacklinksFromBody(file: TFile | string): ReadonlySet<string> {
+    const destPath = typeof file === "string" ? file : file.path;
+    return this.resolveIndex(this.bodyBacklinkIndex, destPath);
+  }
+
+  getBacklinksFromFrontmatter(file: TFile | string): ReadonlySet<string> {
+    const destPath = typeof file === "string" ? file : file.path;
+    return this.resolveIndex(this.frontmatterBacklinkIndex, destPath);
+  }
+
   getUnresolvedBacklinks(destName: string): ReadonlySet<string> {
-    return this.resolveIndex(
-      this.unresolvedBacklinkIndex,
-      destName.toLowerCase(),
-    );
+    return this.resolveIndex(this.unresolvedBacklinkIndex, destName.toLowerCase());
   }
 
   getFilesEmbedding(file: TFile | string): ReadonlySet<string> {
@@ -902,10 +1000,7 @@ export class ExtendedMetadataCache
     return this.resolveIndex(this.frontmatterKeyIndex, key.toLowerCase());
   }
 
-  getFilesWithFrontmatterValue(
-    key: string,
-    value: unknown,
-  ): ReadonlySet<string> {
+  getFilesWithFrontmatterValue(key: string, value: unknown): ReadonlySet<string> {
     const compositeKey = composeFrontmatterValueKey(key.toLowerCase(), value);
     return this.resolveIndex(this.frontmatterValueIndex, compositeKey);
   }
@@ -928,6 +1023,48 @@ export class ExtendedMetadataCache
     const path = this.files.getPath(fileId);
     if (path === undefined) return null;
     return (this.app.vault.getFileByPath(path) as TFile | null) ?? null;
+  }
+
+  getFilesWithTasks(): ReadonlySet<string> {
+    const allIds = new Set<FileId>();
+    for (const ids of this.taskStatusIndex.entries().values()) {
+      for (const id of ids) allIds.add(id);
+    }
+    if (allIds.size === 0) return EMPTY_PATH_SET;
+    return this.files.resolvePaths(allIds);
+  }
+
+  getFilesWithTaskStatus(status: string | string[]): ReadonlySet<string> {
+    if (typeof status === "string") {
+      return this.resolveIndex(this.taskStatusIndex, status);
+    }
+    const allIds = new Set<FileId>();
+    for (const s of status) {
+      for (const id of this.taskStatusIndex.get(s)) {
+        allIds.add(id);
+      }
+    }
+    if (allIds.size === 0) return EMPTY_PATH_SET;
+    return this.files.resolvePaths(allIds);
+  }
+
+  getAllTaskStatusesWithFiles(): ReadonlyMap<string, ReadonlySet<string>> {
+    return this.resolveFullIndex(this.taskStatusIndex);
+  }
+
+  getFilesWithOpenTasks(): ReadonlySet<string> {
+    return this.resolveIndex(this.taskStatusIndex, " ");
+  }
+
+  getFilesWithCompletedTasks(): ReadonlySet<string> {
+    const allIds = new Set<FileId>();
+    for (const [status, ids] of this.taskStatusIndex.entries()) {
+      if (status !== " ") {
+        for (const id of ids) allIds.add(id);
+      }
+    }
+    if (allIds.size === 0) return EMPTY_PATH_SET;
+    return this.files.resolvePaths(allIds);
   }
 
   destroy(): void {
@@ -955,7 +1092,11 @@ export class ExtendedMetadataCache
     this.store = null;
 
     this.tagIndex.clear();
+    this.bodyTagIndex.clear();
+    this.frontmatterTagIndex.clear();
     this.backlinkIndex.clear();
+    this.bodyBacklinkIndex.clear();
+    this.frontmatterBacklinkIndex.clear();
     this.unresolvedBacklinkIndex.clear();
     this.embedIndex.clear();
     this.headingIndex.clear();
@@ -963,6 +1104,7 @@ export class ExtendedMetadataCache
     this.frontmatterValueIndex.clear();
     this.aliasIndex.clear();
     this.blockIndex.clear();
+    this.taskStatusIndex.clear();
     this.contributions.clear();
     this.mtimes.clear();
     this.files.clear();
@@ -983,8 +1125,7 @@ function normalizeFrontmatterValue(key: string, value: unknown): string[] {
 function normalizePrimitive(value: unknown): string {
   if (value === null || value === undefined) return "";
   if (typeof value === "string") return value.toLowerCase();
-  if (typeof value === "number" || typeof value === "boolean")
-    return String(value);
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
   if (value instanceof Date) return value.toISOString().toLowerCase();
   return JSON.stringify(value).toLowerCase();
 }

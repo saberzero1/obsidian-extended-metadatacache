@@ -68,10 +68,7 @@ export class PersistenceStore {
   ): Promise<boolean> {
     if (!this.db) return false;
     try {
-      const tx = this.db.transaction(
-        [STORE_INTERN, STORE_CONTRIB],
-        "readwrite",
-      );
+      const tx = this.db.transaction([STORE_INTERN, STORE_CONTRIB], "readwrite");
       const internStore = tx.objectStore(STORE_INTERN);
       const contribStore = tx.objectStore(STORE_CONTRIB);
 
@@ -98,10 +95,7 @@ export class PersistenceStore {
   async clear(): Promise<void> {
     if (!this.db) return;
     try {
-      const tx = this.db.transaction(
-        [STORE_META, STORE_INTERN, STORE_CONTRIB],
-        "readwrite",
-      );
+      const tx = this.db.transaction([STORE_META, STORE_INTERN, STORE_CONTRIB], "readwrite");
       tx.objectStore(STORE_META).clear();
       tx.objectStore(STORE_INTERN).clear();
       tx.objectStore(STORE_CONTRIB).clear();
@@ -124,42 +118,53 @@ export function serializeContributions(
 ): SerializedContribRecord {
   const record: SerializedContribRecord = { id, mtime };
   if (contrib.tags?.size) record.tags = [...contrib.tags];
+  if (contrib.bodyTags?.size) record.bodyTags = [...contrib.bodyTags];
+  if (contrib.frontmatterTags?.size) record.frontmatterTags = [...contrib.frontmatterTags];
   if (contrib.backlinks?.size) record.backlinks = [...contrib.backlinks];
+  if (contrib.bodyBacklinks?.size) record.bodyBacklinks = [...contrib.bodyBacklinks];
+  if (contrib.frontmatterBacklinks?.size)
+    record.frontmatterBacklinks = [...contrib.frontmatterBacklinks];
   if (contrib.unresolvedBacklinks?.size)
     record.unresolvedBacklinks = [...contrib.unresolvedBacklinks];
   if (contrib.embeds?.size) record.embeds = [...contrib.embeds];
   if (contrib.headings?.size) record.headings = [...contrib.headings];
-  if (contrib.frontmatterKeys?.size)
-    record.frontmatterKeys = [...contrib.frontmatterKeys];
-  if (contrib.frontmatterValues?.size)
-    record.frontmatterValues = [...contrib.frontmatterValues];
+  if (contrib.frontmatterKeys?.size) record.frontmatterKeys = [...contrib.frontmatterKeys];
+  if (contrib.frontmatterValues?.size) record.frontmatterValues = [...contrib.frontmatterValues];
   if (contrib.aliases?.size) record.aliases = [...contrib.aliases];
   if (contrib.blocks?.size) record.blocks = [...contrib.blocks];
+  if (contrib.taskStatuses?.size) record.taskStatuses = [...contrib.taskStatuses];
   return record;
 }
 
-export function deserializeContributions(
-  record: SerializedContribRecord,
-): FileContributions {
+export function deserializeContributions(record: SerializedContribRecord): FileContributions {
   const contrib: FileContributions = {};
   if (record.tags?.length) contrib.tags = new Set(record.tags);
+  if (record.bodyTags?.length) contrib.bodyTags = new Set(record.bodyTags);
+  if (record.frontmatterTags?.length) contrib.frontmatterTags = new Set(record.frontmatterTags);
   if (record.backlinks?.length) contrib.backlinks = new Set(record.backlinks);
+  if (record.bodyBacklinks?.length) contrib.bodyBacklinks = new Set(record.bodyBacklinks);
+  if (record.frontmatterBacklinks?.length)
+    contrib.frontmatterBacklinks = new Set(record.frontmatterBacklinks);
   if (record.unresolvedBacklinks?.length)
     contrib.unresolvedBacklinks = new Set(record.unresolvedBacklinks);
   if (record.embeds?.length) contrib.embeds = new Set(record.embeds);
   if (record.headings?.length) contrib.headings = new Set(record.headings);
-  if (record.frontmatterKeys?.length)
-    contrib.frontmatterKeys = new Set(record.frontmatterKeys);
+  if (record.frontmatterKeys?.length) contrib.frontmatterKeys = new Set(record.frontmatterKeys);
   if (record.frontmatterValues?.length)
     contrib.frontmatterValues = new Set(record.frontmatterValues);
   if (record.aliases?.length) contrib.aliases = new Set(record.aliases);
   if (record.blocks?.length) contrib.blocks = new Set(record.blocks);
+  if (record.taskStatuses?.length) contrib.taskStatuses = new Set(record.taskStatuses);
   return contrib;
 }
 
 const INDEX_TYPES_FOR_CONTRIB: IndexType[] = [
   "tags",
+  "bodyTags",
+  "frontmatterTags",
   "backlinks",
+  "bodyBacklinks",
+  "frontmatterBacklinks",
   "unresolvedBacklinks",
   "embeds",
   "headings",
@@ -167,6 +172,7 @@ const INDEX_TYPES_FOR_CONTRIB: IndexType[] = [
   "frontmatterValues",
   "aliases",
   "blocks",
+  "taskStatuses",
 ];
 
 export function contribHasData(contrib: FileContributions): boolean {
