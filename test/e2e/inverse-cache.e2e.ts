@@ -61,13 +61,30 @@ describe("Extended MetadataCache E2E", function () {
     });
 
     it("should find files with a specific tag", async () => {
-      const result = await browser.executeObsidian(() => {
+      const result = await browser.executeObsidian(({ app, obsidian }) => {
         const api = (window as any).extendedMetadataCache.api;
-        return [...api.getFilesWithTag("#shared-tag")].sort();
+        const ours = [...api.getFilesWithTag("#shared-tag")].sort();
+
+        const native: string[] = [];
+        for (const file of app.vault.getMarkdownFiles()) {
+          const cache = app.metadataCache.getFileCache(file);
+          if (!cache) continue;
+          const tags = (obsidian as any).getAllTags(cache) as string[] | null;
+          if (tags?.some((t: string) => t.toLowerCase() === "#shared-tag")) {
+            native.push(file.path);
+          }
+        }
+        native.sort();
+
+        return {
+          ours,
+          native,
+          match: JSON.stringify(ours) === JSON.stringify(native),
+        };
       });
 
-      expect(result).toContain("tags-test.md");
-      expect(result).toContain("frontmatter-test.md");
+      expect(result.match).toBe(true);
+      expect(result.ours.length).toBeGreaterThan(0);
     });
   });
 
