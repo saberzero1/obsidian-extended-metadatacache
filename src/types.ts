@@ -1,4 +1,4 @@
-import type { EventRef } from "obsidian";
+import type { EventRef, TFile } from "obsidian";
 
 /**
  * Internal numeric file identifier. File paths are interned to integers
@@ -103,14 +103,14 @@ export interface ExtendedMetadataCacheAPI {
   /** Get all tags across the vault with their file sets. */
   getAllTagsWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
-  /** Get all files that link TO the given file path (resolved backlinks). */
-  getBacklinksForFile(destPath: string): ReadonlySet<string>;
+  /** Get all files that link TO the given file. Accepts TFile or vault-absolute path. */
+  getBacklinksForFile(file: TFile | string): ReadonlySet<string>;
 
   /** Get all files with unresolved links matching the given name. */
   getUnresolvedBacklinks(destName: string): ReadonlySet<string>;
 
-  /** Get all files that embed the given file path. */
-  getFilesEmbedding(destPath: string): ReadonlySet<string>;
+  /** Get all files that embed the given file. Accepts TFile or vault-absolute path. */
+  getFilesEmbedding(file: TFile | string): ReadonlySet<string>;
 
   /** Get all files that contain a heading matching the given text (case-insensitive). */
   getFilesWithHeading(heading: string): ReadonlySet<string>;
@@ -137,7 +137,7 @@ export interface ExtendedMetadataCacheAPI {
   getAllAliasesWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
   /** Get the file that defines the given block ID, or null. */
-  getFileWithBlockId(blockId: string): string | null;
+  getFileWithBlockId(blockId: string): TFile | null;
 
   on(name: "ready", callback: () => void, ctx?: unknown): EventRef;
   on(

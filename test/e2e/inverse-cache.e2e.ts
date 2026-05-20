@@ -294,6 +294,18 @@ describe("Extended MetadataCache E2E", function () {
       expect(result).toContain("backlinks-source.md");
       expect(result).toContain("subfolder/nested-note.md");
     });
+
+    it("should accept TFile as parameter", async () => {
+      const result = await browser.executeObsidian(({ app, obsidian }) => {
+        const api = (window as any).extendedMetadataCache.api;
+        const file = app.vault.getFileByPath("backlinks-target.md");
+        if (!file) return [];
+        return [...api.getBacklinksForFile(file)].sort();
+      });
+
+      expect(result).toContain("index.md");
+      expect(result).toContain("backlinks-source.md");
+    });
   });
 
   describe("unresolved backlinks", () => {
@@ -401,7 +413,8 @@ describe("Extended MetadataCache E2E", function () {
           if (!cache?.blocks) continue;
           for (const blockId of Object.keys(cache.blocks)) {
             total++;
-            const ourPath = api.getFileWithBlockId(blockId);
+            const ourFile = api.getFileWithBlockId(blockId);
+            const ourPath = ourFile?.path ?? null;
             if (ourPath !== file.path) {
               mismatches.push(
                 `^${blockId}: ours=${ourPath} native=${file.path}`,

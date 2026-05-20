@@ -873,7 +873,8 @@ export class ExtendedMetadataCache
     return this.resolveFullIndex(this.tagIndex);
   }
 
-  getBacklinksForFile(destPath: string): ReadonlySet<string> {
+  getBacklinksForFile(file: TFile | string): ReadonlySet<string> {
+    const destPath = typeof file === "string" ? file : file.path;
     return this.resolveIndex(this.backlinkIndex, destPath);
   }
 
@@ -884,7 +885,8 @@ export class ExtendedMetadataCache
     );
   }
 
-  getFilesEmbedding(destPath: string): ReadonlySet<string> {
+  getFilesEmbedding(file: TFile | string): ReadonlySet<string> {
+    const destPath = typeof file === "string" ? file : file.path;
     return this.resolveIndex(this.embedIndex, destPath);
   }
 
@@ -920,10 +922,12 @@ export class ExtendedMetadataCache
     return this.resolveFullIndex(this.aliasIndex);
   }
 
-  getFileWithBlockId(blockId: string): string | null {
+  getFileWithBlockId(blockId: string): TFile | null {
     const fileId = this.blockIndex.get(blockId);
     if (fileId === undefined) return null;
-    return this.files.getPath(fileId) ?? null;
+    const path = this.files.getPath(fileId);
+    if (path === undefined) return null;
+    return (this.app.vault.getFileByPath(path) as TFile | null) ?? null;
   }
 
   destroy(): void {
