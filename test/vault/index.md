@@ -7,6 +7,7 @@ aliases:
   - Start
 title: Index Page
 status: published
+related: "[[backlinks-target]]"
 ---
 
 # Welcome
@@ -19,4 +20,5 @@ This is the index page. It links to all test pages.
 - [[backlinks-target]]
 - [[embeds-source]]
 - [[blocks-test]]
+- [[tasks-test]]
 - [[non-existent-page]]

@@ -46,10 +46,7 @@ describe("Extended MetadataCache E2E", function () {
         for (const key of allKeys) {
           const ours = ourTags.get(key) ?? new Set<string>();
           const native = nativeTags.get(key) ?? new Set<string>();
-          if (
-            ours.size !== native.size ||
-            ![...ours].every((v) => native.has(v))
-          ) {
+          if (ours.size !== native.size || ![...ours].every((v) => native.has(v))) {
             mismatches.push(`${key}: ours=${ours.size} native=${native.size}`);
           }
         }
@@ -110,20 +107,12 @@ describe("Extended MetadataCache E2E", function () {
         }
 
         const mismatches: string[] = [];
-        const allKeys = new Set([
-          ...ourHeadings.keys(),
-          ...nativeHeadings.keys(),
-        ]);
+        const allKeys = new Set([...ourHeadings.keys(), ...nativeHeadings.keys()]);
         for (const key of allKeys) {
           const ours = ourHeadings.get(key) ?? new Set<string>();
           const native = nativeHeadings.get(key) ?? new Set<string>();
-          if (
-            ours.size !== native.size ||
-            ![...ours].every((v) => native.has(v))
-          ) {
-            mismatches.push(
-              `"${key}": ours=${ours.size} native=${native.size}`,
-            );
+          if (ours.size !== native.size || ![...ours].every((v) => native.has(v))) {
+            mismatches.push(`"${key}": ours=${ours.size} native=${native.size}`);
           }
         }
         return { total: allKeys.size, mismatches };
@@ -171,10 +160,7 @@ describe("Extended MetadataCache E2E", function () {
         for (const key of allKeyNames) {
           const ours = ourKeys.get(key) ?? new Set<string>();
           const native = nativeKeys.get(key) ?? new Set<string>();
-          if (
-            ours.size !== native.size ||
-            ![...ours].every((v) => native.has(v))
-          ) {
+          if (ours.size !== native.size || ![...ours].every((v) => native.has(v))) {
             mismatches.push(`${key}: ours=${ours.size} native=${native.size}`);
           }
         }
@@ -188,9 +174,7 @@ describe("Extended MetadataCache E2E", function () {
     it("should find files by frontmatter value", async () => {
       const result = await browser.executeObsidian(() => {
         const api = (window as any).extendedMetadataCache.api;
-        return [
-          ...api.getFilesWithFrontmatterValue("status", "published"),
-        ].sort();
+        return [...api.getFilesWithFrontmatterValue("status", "published")].sort();
       });
 
       expect(result).toContain("index.md");
@@ -207,9 +191,9 @@ describe("Extended MetadataCache E2E", function () {
         const nativeAliases = new Map<string, Set<string>>();
         for (const file of app.vault.getMarkdownFiles()) {
           const cache = app.metadataCache.getFileCache(file);
-          const aliases = (obsidian as any).parseFrontMatterAliases(
-            cache?.frontmatter ?? null,
-          ) as string[] | null;
+          const aliases = (obsidian as any).parseFrontMatterAliases(cache?.frontmatter ?? null) as
+            | string[]
+            | null;
           if (!aliases) continue;
           for (const alias of aliases) {
             const normalized = alias.toLowerCase();
@@ -223,20 +207,12 @@ describe("Extended MetadataCache E2E", function () {
         }
 
         const mismatches: string[] = [];
-        const allKeys = new Set([
-          ...ourAliases.keys(),
-          ...nativeAliases.keys(),
-        ]);
+        const allKeys = new Set([...ourAliases.keys(), ...nativeAliases.keys()]);
         for (const key of allKeys) {
           const ours = ourAliases.get(key) ?? new Set<string>();
           const native = nativeAliases.get(key) ?? new Set<string>();
-          if (
-            ours.size !== native.size ||
-            ![...ours].every((v) => native.has(v))
-          ) {
-            mismatches.push(
-              `"${key}": ours=${ours.size} native=${native.size}`,
-            );
+          if (ours.size !== native.size || ![...ours].every((v) => native.has(v))) {
+            mismatches.push(`"${key}": ours=${ours.size} native=${native.size}`);
           }
         }
         return { total: allKeys.size, mismatches };
@@ -278,20 +254,14 @@ describe("Extended MetadataCache E2E", function () {
 
         const mismatches: string[] = [];
         const allTargets = new Set([...nativeBacklinks.keys()]);
-        for (const file of app.vault.getMarkdownFiles())
-          allTargets.add(file.path);
+        for (const file of app.vault.getMarkdownFiles()) allTargets.add(file.path);
 
         for (const target of allTargets) {
           const ours = api.getBacklinksForFile(target);
           const native = nativeBacklinks.get(target) ?? new Set<string>();
           if (ours.size === 0 && native.size === 0) continue;
-          if (
-            ours.size !== native.size ||
-            ![...ours].every((v: string) => native.has(v))
-          ) {
-            mismatches.push(
-              `${target}: ours=${ours.size} native=${native.size}`,
-            );
+          if (ours.size !== native.size || ![...ours].every((v: string) => native.has(v))) {
+            mismatches.push(`${target}: ours=${ours.size} native=${native.size}`);
           }
         }
         return { targets: nativeBacklinks.size, mismatches };
@@ -348,13 +318,8 @@ describe("Extended MetadataCache E2E", function () {
         const mismatches: string[] = [];
         for (const [target, native] of nativeUnresolved) {
           const ours = api.getUnresolvedBacklinks(target);
-          if (
-            ours.size !== native.size ||
-            ![...ours].every((v: string) => native.has(v))
-          ) {
-            mismatches.push(
-              `"${target}": ours=${ours.size} native=${native.size}`,
-            );
+          if (ours.size !== native.size || ![...ours].every((v: string) => native.has(v))) {
+            mismatches.push(`"${target}": ours=${ours.size} native=${native.size}`);
           }
         }
         return { targets: nativeUnresolved.size, mismatches };
@@ -375,13 +340,8 @@ describe("Extended MetadataCache E2E", function () {
           const cache = app.metadataCache.getFileCache(file);
           if (!cache?.embeds) continue;
           for (const embed of cache.embeds) {
-            const linkpath = (obsidian as any).getLinkpath(
-              embed.link,
-            ) as string;
-            const dest = app.metadataCache.getFirstLinkpathDest(
-              linkpath,
-              file.path,
-            );
+            const linkpath = (obsidian as any).getLinkpath(embed.link) as string;
+            const dest = app.metadataCache.getFirstLinkpathDest(linkpath, file.path);
             const destPath = dest?.path ?? linkpath;
             let set = nativeEmbeds.get(destPath);
             if (!set) {
@@ -400,13 +360,8 @@ describe("Extended MetadataCache E2E", function () {
           const ours = api.getFilesEmbedding(target);
           const native = nativeEmbeds.get(target) ?? new Set<string>();
           if (ours.size === 0 && native.size === 0) continue;
-          if (
-            ours.size !== native.size ||
-            ![...ours].every((v: string) => native.has(v))
-          ) {
-            mismatches.push(
-              `${target}: ours=${ours.size} native=${native.size}`,
-            );
+          if (ours.size !== native.size || ![...ours].every((v: string) => native.has(v))) {
+            mismatches.push(`${target}: ours=${ours.size} native=${native.size}`);
           }
         }
         return { targets: nativeEmbeds.size, mismatches };
@@ -433,9 +388,7 @@ describe("Extended MetadataCache E2E", function () {
             const ourFile = api.getFileWithBlockId(blockId);
             const ourPath = ourFile?.path ?? null;
             if (ourPath !== file.path) {
-              mismatches.push(
-                `^${blockId}: ours=${ourPath} native=${file.path}`,
-              );
+              mismatches.push(`^${blockId}: ours=${ourPath} native=${file.path}`);
             }
           }
         }
@@ -505,11 +458,8 @@ describe("Extended MetadataCache E2E", function () {
     it("should find files by date value (using native stored type)", async () => {
       const result = await browser.executeObsidian(({ app, obsidian }) => {
         const api = (window as any).extendedMetadataCache.api;
-        const file = app.vault.getAbstractFileByPath(
-          "frontmatter-values-test.md",
-        );
-        if (!file)
-          return { files: [] as string[], storedType: "file-not-found" };
+        const file = app.vault.getAbstractFileByPath("frontmatter-values-test.md");
+        if (!file) return { files: [] as string[], storedType: "file-not-found" };
         const cache = app.metadataCache.getFileCache(
           file as unknown as InstanceType<typeof obsidian.TFile>,
         );
@@ -537,9 +487,7 @@ describe("Extended MetadataCache E2E", function () {
     it("should find files with same status across files", async () => {
       const result = await browser.executeObsidian(() => {
         const api = (window as any).extendedMetadataCache.api;
-        return [
-          ...api.getFilesWithFrontmatterValue("status", "published"),
-        ].sort();
+        return [...api.getFilesWithFrontmatterValue("status", "published")].sort();
       });
 
       expect(result).toContain("index.md");
@@ -561,22 +509,15 @@ describe("Extended MetadataCache E2E", function () {
 
             const filesWithKey = api.getFilesWithFrontmatterKey(key);
             if (!filesWithKey.has(file.path)) {
-              mismatches.push(
-                `${file.path}: key "${key}" not found in our index`,
-              );
+              mismatches.push(`${file.path}: key "${key}" not found in our index`);
               continue;
             }
 
             if (Array.isArray(value)) {
               for (const elem of value) {
-                const filesWithVal = api.getFilesWithFrontmatterValue(
-                  key,
-                  elem,
-                );
+                const filesWithVal = api.getFilesWithFrontmatterValue(key, elem);
                 if (!filesWithVal.has(file.path)) {
-                  mismatches.push(
-                    `${file.path}: ${key}=[...${String(elem)}...] not found`,
-                  );
+                  mismatches.push(`${file.path}: ${key}=[...${String(elem)}...] not found`);
                 }
               }
             } else {
@@ -590,6 +531,180 @@ describe("Extended MetadataCache E2E", function () {
           }
         }
 
+        return { mismatches };
+      });
+
+      expect(result.mismatches).toEqual([]);
+    });
+  });
+
+  describe("separated tags", () => {
+    it("should distinguish body tags from frontmatter tags", async () => {
+      const result = await browser.executeObsidian(({ app, obsidian }) => {
+        const api = (window as any).extendedMetadataCache.api;
+        const mismatches: string[] = [];
+
+        for (const file of app.vault.getMarkdownFiles()) {
+          const cache = app.metadataCache.getFileCache(file);
+          if (!cache) continue;
+
+          const nativeBodyTags = new Set<string>();
+          if (cache.tags) {
+            for (const t of cache.tags) nativeBodyTags.add(t.tag.toLowerCase());
+          }
+
+          const nativeFmTags = new Set<string>();
+          const fmTags = (obsidian as any).parseFrontMatterTags(cache.frontmatter ?? null) as
+            | string[]
+            | null;
+          if (fmTags) {
+            for (const t of fmTags) nativeFmTags.add(t.toLowerCase());
+          }
+
+          for (const tag of nativeBodyTags) {
+            if (!api.getFilesWithTagInBody(tag).has(file.path)) {
+              mismatches.push(`${file.path}: body tag ${tag} missing from getFilesWithTagInBody`);
+            }
+          }
+          for (const tag of nativeFmTags) {
+            if (!api.getFilesWithTagInFrontmatter(tag).has(file.path)) {
+              mismatches.push(
+                `${file.path}: fm tag ${tag} missing from getFilesWithTagInFrontmatter`,
+              );
+            }
+          }
+        }
+        return { mismatches };
+      });
+
+      expect(result.mismatches).toEqual([]);
+    });
+
+    it("should return body-only tag file only from getFilesWithTagInBody", async () => {
+      const result = await browser.executeObsidian(() => {
+        const api = (window as any).extendedMetadataCache.api;
+        return {
+          body: [...api.getFilesWithTagInBody("#body-only-tag")],
+          fm: [...api.getFilesWithTagInFrontmatter("#body-only-tag")],
+        };
+      });
+
+      expect(result.body).toContain("body-only-tags.md");
+      expect(result.fm).not.toContain("body-only-tags.md");
+    });
+
+    it("should return frontmatter-only tag file only from getFilesWithTagInFrontmatter", async () => {
+      const result = await browser.executeObsidian(() => {
+        const api = (window as any).extendedMetadataCache.api;
+        return {
+          body: [...api.getFilesWithTagInBody("#fm-only-tag")],
+          fm: [...api.getFilesWithTagInFrontmatter("#fm-only-tag")],
+        };
+      });
+
+      expect(result.body).not.toContain("frontmatter-only-tags.md");
+      expect(result.fm).toContain("frontmatter-only-tags.md");
+    });
+  });
+
+  describe("separated backlinks", () => {
+    it("should distinguish body backlinks from frontmatter backlinks", async () => {
+      const result = await browser.executeObsidian(() => {
+        const api = (window as any).extendedMetadataCache.api;
+        return {
+          combined: [...api.getBacklinksForFile("backlinks-target.md")].sort(),
+          body: [...api.getBacklinksFromBody("backlinks-target.md")].sort(),
+          fm: [...api.getBacklinksFromFrontmatter("backlinks-target.md")].sort(),
+        };
+      });
+
+      expect(result.combined.length).toBeGreaterThan(0);
+      expect(result.combined).toContain("index.md");
+      expect(result.body).toContain("index.md");
+      expect(result.fm).toContain("index.md");
+    });
+  });
+
+  describe("tasks", () => {
+    it("should find files with tasks", async () => {
+      const result = await browser.executeObsidian(() => {
+        const api = (window as any).extendedMetadataCache.api;
+        return [...api.getFilesWithTasks()];
+      });
+
+      expect(result).toContain("tasks-test.md");
+    });
+
+    it("should find files with open tasks", async () => {
+      const result = await browser.executeObsidian(() => {
+        const api = (window as any).extendedMetadataCache.api;
+        return [...api.getFilesWithOpenTasks()];
+      });
+
+      expect(result).toContain("tasks-test.md");
+    });
+
+    it("should find files with completed tasks (any non-space)", async () => {
+      const result = await browser.executeObsidian(() => {
+        const api = (window as any).extendedMetadataCache.api;
+        return [...api.getFilesWithCompletedTasks()];
+      });
+
+      expect(result).toContain("tasks-test.md");
+    });
+
+    it("should find files by specific task status", async () => {
+      const result = await browser.executeObsidian(() => {
+        const api = (window as any).extendedMetadataCache.api;
+        return [...api.getFilesWithTaskStatus("/")];
+      });
+
+      expect(result).toContain("tasks-test.md");
+    });
+
+    it("should accept array of statuses", async () => {
+      const result = await browser.executeObsidian(() => {
+        const api = (window as any).extendedMetadataCache.api;
+        return [...api.getFilesWithTaskStatus(["/", "-", ">"])];
+      });
+
+      expect(result).toContain("tasks-test.md");
+    });
+
+    it("should return all task statuses with files", async () => {
+      const result = await browser.executeObsidian(() => {
+        const api = (window as any).extendedMetadataCache.api;
+        const all = api.getAllTaskStatusesWithFiles();
+        const statuses: string[] = [];
+        for (const key of all.keys()) statuses.push(key);
+        return statuses.sort();
+      });
+
+      expect(result).toContain(" ");
+      expect(result).toContain("x");
+    });
+
+    it("should cross-verify task statuses against native cache", async () => {
+      const result = await browser.executeObsidian(({ app }) => {
+        const api = (window as any).extendedMetadataCache.api;
+        const mismatches: string[] = [];
+
+        for (const file of app.vault.getMarkdownFiles()) {
+          const cache = app.metadataCache.getFileCache(file);
+          if (!cache?.listItems) continue;
+
+          const nativeStatuses = new Set<string>();
+          for (const item of cache.listItems) {
+            if (item.task !== undefined) nativeStatuses.add(item.task);
+          }
+
+          for (const status of nativeStatuses) {
+            const files = api.getFilesWithTaskStatus(status);
+            if (!files.has(file.path)) {
+              mismatches.push(`${file.path}: status "${status}" not in index`);
+            }
+          }
+        }
         return { mismatches };
       });
 
