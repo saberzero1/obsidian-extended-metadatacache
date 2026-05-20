@@ -1,6 +1,6 @@
 {
   "name": "obsidian-extended-metadatacache",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Inverse lookup complement to Obsidian's MetadataCache — tag→files, backlinks, heading→files, frontmatter→files, and more.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -28,6 +28,8 @@
     "test:watch": "vitest",
     "test:e2e": "npm run build && node scripts/build-test-plugin.mjs && wdio run ./wdio.conf.mts",
     "lint": "eslint src/",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "version-bump": "node scripts/version-bump.mjs"
@@ -49,7 +51,7 @@
   "bugs": {
     "url": "https://github.com/saberzero1/obsidian-extended-metadatacache/issues"
   },
-  "homepage": "https://github.com/saberzero1/obsidian-extended-metadatacache#readme",
+  "homepage": "https://saberzero1.github.io/obsidian-extended-metadatacache/",
   "peerDependencies": {
     "obsidian": ">=1.5.7"
   },
@@ -62,6 +64,7 @@
     "esbuild": "^0.25.0",
     "eslint": "^9.0.0",
     "obsidian": "^1.8.7",
+    "prettier": "^3.8.3",
     "tsup": "^8.0.0",
     "typescript": "^5.4.0",
     "vitest": "^3.0.0",

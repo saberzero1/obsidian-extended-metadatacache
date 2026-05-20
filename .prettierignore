@@ -1,0 +1,5 @@
+dist/
+node_modules/
+.obsidian-cache/
+test/plugin/main.js
+*.md
