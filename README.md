@@ -6,17 +6,17 @@ Inverse lookup complement to Obsidian's `MetadataCache`. Where `MetadataCache` a
 
 Obsidian's `MetadataCache` only offers file → metadata lookups. This library builds and maintains the inverse indexes:
 
-| Query | Method |
-|---|---|
-| Which files have `#tag`? | `getFilesWithTag(tag)` |
-| Which files link to `path`? | `getBacklinksForFile(destPath)` |
-| Which files have unresolved links to `name`? | `getUnresolvedBacklinks(destName)` |
-| Which files embed `path`? | `getFilesEmbedding(destPath)` |
-| Which files have heading `text`? | `getFilesWithHeading(heading)` |
-| Which files have frontmatter key `key`? | `getFilesWithFrontmatterKey(key)` |
+| Query                                          | Method                                     |
+| ---------------------------------------------- | ------------------------------------------ |
+| Which files have `#tag`?                       | `getFilesWithTag(tag)`                     |
+| Which files link to `path`?                    | `getBacklinksForFile(destPath)`            |
+| Which files have unresolved links to `name`?   | `getUnresolvedBacklinks(destName)`         |
+| Which files embed `path`?                      | `getFilesEmbedding(destPath)`              |
+| Which files have heading `text`?               | `getFilesWithHeading(heading)`             |
+| Which files have frontmatter key `key`?        | `getFilesWithFrontmatterKey(key)`          |
 | Which files have `key = value` in frontmatter? | `getFilesWithFrontmatterValue(key, value)` |
-| Which files have alias `name`? | `getFilesWithAlias(alias)` |
-| Which file defines block `^id`? | `getFileWithBlockId(blockId)` |
+| Which files have alias `name`?                 | `getFilesWithAlias(alias)`                 |
+| Which file defines block `^id`?                | `getFileWithBlockId(blockId)`              |
 
 All indexes update incrementally via `MetadataCache` events. No full rescans.
 
@@ -105,7 +105,10 @@ interface ExtendedMetadataCacheAPI {
   getAllHeadingsWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
   getFilesWithFrontmatterKey(key: string): ReadonlySet<string>;
-  getFilesWithFrontmatterValue(key: string, value: unknown): ReadonlySet<string>;
+  getFilesWithFrontmatterValue(
+    key: string,
+    value: unknown,
+  ): ReadonlySet<string>;
   getAllFrontmatterKeysWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
   getFilesWithAlias(alias: string): ReadonlySet<string>;
@@ -137,9 +140,9 @@ cache.on("rebuild-progress", ({ processed, total }) => {
 
 ```typescript
 getAPI(app, {
-  chunkSize: 500,        // Files per async chunk during initial build (default: 500)
-  persist: true,          // Enable IndexedDB persistence (default: true)
-  flushDebounceMs: 2000,  // Debounce before writing to IndexedDB (default: 2000)
+  chunkSize: 500, // Files per async chunk during initial build (default: 500)
+  persist: true, // Enable IndexedDB persistence (default: true)
+  flushDebounceMs: 2000, // Debounce before writing to IndexedDB (default: 2000)
   flushIntervalMs: 30000, // Periodic flush interval (default: 30000)
 });
 ```

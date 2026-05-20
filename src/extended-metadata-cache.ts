@@ -32,7 +32,10 @@ const EMPTY_PATH_MAP: ReadonlyMap<string, ReadonlySet<string>> = Object.freeze(
   new Map<string, ReadonlySet<string>>(),
 );
 
-export class ExtendedMetadataCache extends Events implements ExtendedMetadataCacheAPI {
+export class ExtendedMetadataCache
+  extends Events
+  implements ExtendedMetadataCacheAPI
+{
   private readonly app: App;
   private readonly files: FileIntern;
   private readonly contributions = new Map<FileId, FileContributions>();
@@ -69,8 +72,16 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
   }
 
   on(name: "ready", callback: () => void, ctx?: unknown): EventRef;
-  on(name: "file-updated", callback: (path: string) => void, ctx?: unknown): EventRef;
-  on(name: "rebuild-progress", callback: (progress: BuildProgress) => void, ctx?: unknown): EventRef;
+  on(
+    name: "file-updated",
+    callback: (path: string) => void,
+    ctx?: unknown,
+  ): EventRef;
+  on(
+    name: "rebuild-progress",
+    callback: (progress: BuildProgress) => void,
+    ctx?: unknown,
+  ): EventRef;
   on(name: string, callback: (...data: any[]) => any, ctx?: unknown): EventRef;
   on(name: string, callback: (...data: any[]) => any, ctx?: unknown): EventRef {
     return super.on(name, callback, ctx);
@@ -82,8 +93,10 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     this.files = new FileIntern();
     this.chunkSize = options?.chunkSize ?? DEFAULT_CHUNK_SIZE;
     this.persistEnabled = options?.persist !== false;
-    this.flushDebounceMs = options?.flushDebounceMs ?? DEFAULT_FLUSH_DEBOUNCE_MS;
-    this.flushIntervalMs = options?.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS;
+    this.flushDebounceMs =
+      options?.flushDebounceMs ?? DEFAULT_FLUSH_DEBOUNCE_MS;
+    this.flushIntervalMs =
+      options?.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS;
     this.registerEvents();
     this.initialize();
   }
@@ -177,7 +190,10 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     }
   }
 
-  private rebuildIndexesFromContributions(fileId: FileId, contrib: FileContributions): void {
+  private rebuildIndexesFromContributions(
+    fileId: FileId,
+    contrib: FileContributions,
+  ): void {
     if (contrib.tags) {
       for (const key of contrib.tags) this.tagIndex.add(key, fileId);
     }
@@ -185,7 +201,8 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
       for (const key of contrib.backlinks) this.backlinkIndex.add(key, fileId);
     }
     if (contrib.unresolvedBacklinks) {
-      for (const key of contrib.unresolvedBacklinks) this.unresolvedBacklinkIndex.add(key, fileId);
+      for (const key of contrib.unresolvedBacklinks)
+        this.unresolvedBacklinkIndex.add(key, fileId);
     }
     if (contrib.embeds) {
       for (const key of contrib.embeds) this.embedIndex.add(key, fileId);
@@ -194,10 +211,12 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
       for (const key of contrib.headings) this.headingIndex.add(key, fileId);
     }
     if (contrib.frontmatterKeys) {
-      for (const key of contrib.frontmatterKeys) this.frontmatterKeyIndex.add(key, fileId);
+      for (const key of contrib.frontmatterKeys)
+        this.frontmatterKeyIndex.add(key, fileId);
     }
     if (contrib.frontmatterValues) {
-      for (const key of contrib.frontmatterValues) this.frontmatterValueIndex.add(key, fileId);
+      for (const key of contrib.frontmatterValues)
+        this.frontmatterValueIndex.add(key, fileId);
     }
     if (contrib.aliases) {
       for (const key of contrib.aliases) this.aliasIndex.add(key, fileId);
@@ -249,7 +268,10 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
       }
 
       processed = Math.min(i + this.chunkSize, total);
-      this.trigger("rebuild-progress", { processed, total } satisfies BuildProgress);
+      this.trigger("rebuild-progress", {
+        processed,
+        total,
+      } satisfies BuildProgress);
 
       if (i + this.chunkSize < total) {
         await yieldToMain();
@@ -257,7 +279,11 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     }
   }
 
-  private reindexFile(path: string, cache: CachedMetadata, mtime: number): void {
+  private reindexFile(
+    path: string,
+    cache: CachedMetadata,
+    mtime: number,
+  ): void {
     const fileId = this.files.intern(path);
     this.removeCacheContributions(fileId);
     const contrib = this.getOrCreateContributions(fileId);
@@ -302,7 +328,10 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
       }
 
       processed = Math.min(i + this.chunkSize, total);
-      this.trigger("rebuild-progress", { processed, total } satisfies BuildProgress);
+      this.trigger("rebuild-progress", {
+        processed,
+        total,
+      } satisfies BuildProgress);
 
       if (i + this.chunkSize < total) {
         await yieldToMain();
@@ -334,7 +363,11 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     this.indexUnresolvedBacklinks(fileId, path, contrib);
   }
 
-  private indexTags(fileId: FileId, cache: CachedMetadata, contrib: FileContributions): void {
+  private indexTags(
+    fileId: FileId,
+    cache: CachedMetadata,
+    contrib: FileContributions,
+  ): void {
     const tags = getAllTags(cache);
     if (!tags) return;
 
@@ -347,12 +380,19 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     contrib.tags = tagKeys;
   }
 
-  private indexEmbeds(fileId: FileId, cache: CachedMetadata, contrib: FileContributions): void {
+  private indexEmbeds(
+    fileId: FileId,
+    cache: CachedMetadata,
+    contrib: FileContributions,
+  ): void {
     if (!cache.embeds) return;
 
     const embedKeys = new Set<string>();
     for (const embed of cache.embeds) {
-      const dest = this.app.metadataCache.getFirstLinkpathDest(embed.link, this.files.getPath(fileId) ?? "");
+      const dest = this.app.metadataCache.getFirstLinkpathDest(
+        embed.link,
+        this.files.getPath(fileId) ?? "",
+      );
       const destPath = dest?.path ?? embed.link;
       embedKeys.add(destPath);
       this.embedIndex.add(destPath, fileId);
@@ -360,7 +400,11 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     contrib.embeds = embedKeys;
   }
 
-  private indexHeadings(fileId: FileId, cache: CachedMetadata, contrib: FileContributions): void {
+  private indexHeadings(
+    fileId: FileId,
+    cache: CachedMetadata,
+    contrib: FileContributions,
+  ): void {
     if (!cache.headings) return;
 
     const headingKeys = new Set<string>();
@@ -372,7 +416,11 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     contrib.headings = headingKeys;
   }
 
-  private indexFrontmatter(fileId: FileId, cache: CachedMetadata, contrib: FileContributions): void {
+  private indexFrontmatter(
+    fileId: FileId,
+    cache: CachedMetadata,
+    contrib: FileContributions,
+  ): void {
     if (!cache.frontmatter) return;
 
     const fmKeys = new Set<string>();
@@ -395,7 +443,11 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     contrib.frontmatterValues = fmValues;
   }
 
-  private indexAliases(fileId: FileId, cache: CachedMetadata, contrib: FileContributions): void {
+  private indexAliases(
+    fileId: FileId,
+    cache: CachedMetadata,
+    contrib: FileContributions,
+  ): void {
     const aliases = parseFrontMatterAliases(cache.frontmatter ?? null);
     if (!aliases) return;
 
@@ -408,7 +460,11 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     contrib.aliases = aliasKeys;
   }
 
-  private indexBlocks(fileId: FileId, cache: CachedMetadata, contrib: FileContributions): void {
+  private indexBlocks(
+    fileId: FileId,
+    cache: CachedMetadata,
+    contrib: FileContributions,
+  ): void {
     if (!cache.blocks) return;
 
     const blockKeys = new Set<string>();
@@ -419,7 +475,11 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     contrib.blocks = blockKeys;
   }
 
-  private indexBacklinks(fileId: FileId, sourcePath: string, contrib: FileContributions): void {
+  private indexBacklinks(
+    fileId: FileId,
+    sourcePath: string,
+    contrib: FileContributions,
+  ): void {
     const resolvedDests = this.app.metadataCache.resolvedLinks[sourcePath];
     if (!resolvedDests) return;
 
@@ -431,7 +491,11 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     contrib.backlinks = backlinkKeys;
   }
 
-  private indexUnresolvedBacklinks(fileId: FileId, sourcePath: string, contrib: FileContributions): void {
+  private indexUnresolvedBacklinks(
+    fileId: FileId,
+    sourcePath: string,
+    contrib: FileContributions,
+  ): void {
     const unresolvedDests = this.app.metadataCache.unresolvedLinks[sourcePath];
     if (!unresolvedDests) return;
 
@@ -444,7 +508,11 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     contrib.unresolvedBacklinks = unresolvedKeys;
   }
 
-  private updateFileFromCache(path: string, cache: CachedMetadata, mtime: number): void {
+  private updateFileFromCache(
+    path: string,
+    cache: CachedMetadata,
+    mtime: number,
+  ): void {
     const fileId = this.files.intern(path);
     this.removeCacheContributions(fileId);
     const contrib = this.getOrCreateContributions(fileId);
@@ -505,7 +573,10 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
       contrib.backlinks = undefined;
     }
     if (contrib.unresolvedBacklinks) {
-      this.unresolvedBacklinkIndex.removeFromKeys(contrib.unresolvedBacklinks, fileId);
+      this.unresolvedBacklinkIndex.removeFromKeys(
+        contrib.unresolvedBacklinks,
+        fileId,
+      );
       contrib.unresolvedBacklinks = undefined;
     }
 
@@ -521,10 +592,17 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
 
     if (contrib.tags) this.tagIndex.removeFromKeys(contrib.tags, fileId);
     if (contrib.embeds) this.embedIndex.removeFromKeys(contrib.embeds, fileId);
-    if (contrib.headings) this.headingIndex.removeFromKeys(contrib.headings, fileId);
-    if (contrib.frontmatterKeys) this.frontmatterKeyIndex.removeFromKeys(contrib.frontmatterKeys, fileId);
-    if (contrib.frontmatterValues) this.frontmatterValueIndex.removeFromKeys(contrib.frontmatterValues, fileId);
-    if (contrib.aliases) this.aliasIndex.removeFromKeys(contrib.aliases, fileId);
+    if (contrib.headings)
+      this.headingIndex.removeFromKeys(contrib.headings, fileId);
+    if (contrib.frontmatterKeys)
+      this.frontmatterKeyIndex.removeFromKeys(contrib.frontmatterKeys, fileId);
+    if (contrib.frontmatterValues)
+      this.frontmatterValueIndex.removeFromKeys(
+        contrib.frontmatterValues,
+        fileId,
+      );
+    if (contrib.aliases)
+      this.aliasIndex.removeFromKeys(contrib.aliases, fileId);
     if (contrib.blocks) this.blockIndex.removeKeys(contrib.blocks);
 
     contrib.tags = undefined;
@@ -540,8 +618,13 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     const contrib = this.contributions.get(fileId);
     if (!contrib) return;
 
-    if (contrib.backlinks) this.backlinkIndex.removeFromKeys(contrib.backlinks, fileId);
-    if (contrib.unresolvedBacklinks) this.unresolvedBacklinkIndex.removeFromKeys(contrib.unresolvedBacklinks, fileId);
+    if (contrib.backlinks)
+      this.backlinkIndex.removeFromKeys(contrib.backlinks, fileId);
+    if (contrib.unresolvedBacklinks)
+      this.unresolvedBacklinkIndex.removeFromKeys(
+        contrib.unresolvedBacklinks,
+        fileId,
+      );
 
     contrib.backlinks = undefined;
     contrib.unresolvedBacklinks = undefined;
@@ -611,7 +694,12 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     this.deletedFileIds.clear();
     this.deletedPaths.clear();
 
-    const ok = await this.store.flush(dirtyInterns, dirtyContribs, deletedIds, deletedPathsArr);
+    const ok = await this.store.flush(
+      dirtyInterns,
+      dirtyContribs,
+      deletedIds,
+      deletedPathsArr,
+    );
     if (!ok) {
       this.disablePersistence();
     }
@@ -629,7 +717,9 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     return this.files.resolvePaths(ids);
   }
 
-  private resolveFullIndex(index: InverseIndex): ReadonlyMap<string, ReadonlySet<string>> {
+  private resolveFullIndex(
+    index: InverseIndex,
+  ): ReadonlyMap<string, ReadonlySet<string>> {
     const entries = index.entries();
     if (entries.size === 0) return EMPTY_PATH_MAP;
 
@@ -641,7 +731,9 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
   }
 
   getFilesWithTag(tag: string): ReadonlySet<string> {
-    const normalized = tag.startsWith("#") ? tag.toLowerCase() : `#${tag.toLowerCase()}`;
+    const normalized = tag.startsWith("#")
+      ? tag.toLowerCase()
+      : `#${tag.toLowerCase()}`;
     return this.resolveIndex(this.tagIndex, normalized);
   }
 
@@ -654,7 +746,10 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
   }
 
   getUnresolvedBacklinks(destName: string): ReadonlySet<string> {
-    return this.resolveIndex(this.unresolvedBacklinkIndex, destName.toLowerCase());
+    return this.resolveIndex(
+      this.unresolvedBacklinkIndex,
+      destName.toLowerCase(),
+    );
   }
 
   getFilesEmbedding(destPath: string): ReadonlySet<string> {
@@ -673,7 +768,10 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     return this.resolveIndex(this.frontmatterKeyIndex, key.toLowerCase());
   }
 
-  getFilesWithFrontmatterValue(key: string, value: unknown): ReadonlySet<string> {
+  getFilesWithFrontmatterValue(
+    key: string,
+    value: unknown,
+  ): ReadonlySet<string> {
     const compositeKey = composeFrontmatterValueKey(key.toLowerCase(), value);
     return this.resolveIndex(this.frontmatterValueIndex, compositeKey);
   }
@@ -749,7 +847,8 @@ function normalizeFrontmatterValue(key: string, value: unknown): string[] {
 function normalizePrimitive(value: unknown): string {
   if (value === null || value === undefined) return "";
   if (typeof value === "string") return value.toLowerCase();
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "number" || typeof value === "boolean")
+    return String(value);
   return JSON.stringify(value).toLowerCase();
 }
 

@@ -97,13 +97,11 @@ export interface ExtendedMetadataCacheAPI {
    */
   readonly isReady: boolean;
 
-
   /** Get all files that contain the given tag (including frontmatter tags). */
   getFilesWithTag(tag: string): ReadonlySet<string>;
 
   /** Get all tags across the vault with their file sets. */
   getAllTagsWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
-
 
   /** Get all files that link TO the given file path (resolved backlinks). */
   getBacklinksForFile(destPath: string): ReadonlySet<string>;
@@ -111,10 +109,8 @@ export interface ExtendedMetadataCacheAPI {
   /** Get all files with unresolved links matching the given name. */
   getUnresolvedBacklinks(destName: string): ReadonlySet<string>;
 
-
   /** Get all files that embed the given file path. */
   getFilesEmbedding(destPath: string): ReadonlySet<string>;
-
 
   /** Get all files that contain a heading matching the given text (case-insensitive). */
   getFilesWithHeading(heading: string): ReadonlySet<string>;
@@ -122,16 +118,17 @@ export interface ExtendedMetadataCacheAPI {
   /** Get all headings across the vault with their file sets. */
   getAllHeadingsWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
-
   /** Get all files that have the given frontmatter key (regardless of value). */
   getFilesWithFrontmatterKey(key: string): ReadonlySet<string>;
 
   /** Get all files where frontmatter[key] equals the given value. */
-  getFilesWithFrontmatterValue(key: string, value: unknown): ReadonlySet<string>;
+  getFilesWithFrontmatterValue(
+    key: string,
+    value: unknown,
+  ): ReadonlySet<string>;
 
   /** Get all frontmatter keys across the vault with their file sets. */
   getAllFrontmatterKeysWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
-
 
   /** Get all files that have the given alias. */
   getFilesWithAlias(alias: string): ReadonlySet<string>;
@@ -139,14 +136,20 @@ export interface ExtendedMetadataCacheAPI {
   /** Get all aliases across the vault with their file sets. */
   getAllAliasesWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
-
   /** Get the file that defines the given block ID, or null. */
   getFileWithBlockId(blockId: string): string | null;
 
-
   on(name: "ready", callback: () => void, ctx?: unknown): EventRef;
-  on(name: "file-updated", callback: (path: string) => void, ctx?: unknown): EventRef;
-  on(name: "rebuild-progress", callback: (progress: BuildProgress) => void, ctx?: unknown): EventRef;
+  on(
+    name: "file-updated",
+    callback: (path: string) => void,
+    ctx?: unknown,
+  ): EventRef;
+  on(
+    name: "rebuild-progress",
+    callback: (progress: BuildProgress) => void,
+    ctx?: unknown,
+  ): EventRef;
   on(name: string, callback: (...data: any[]) => any, ctx?: unknown): EventRef;
 
   off(name: string, callback: (...data: any[]) => any): void;

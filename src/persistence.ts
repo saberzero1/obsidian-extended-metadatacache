@@ -125,33 +125,48 @@ export function serializeContributions(
   const record: SerializedContribRecord = { id, mtime };
   if (contrib.tags?.size) record.tags = [...contrib.tags];
   if (contrib.backlinks?.size) record.backlinks = [...contrib.backlinks];
-  if (contrib.unresolvedBacklinks?.size) record.unresolvedBacklinks = [...contrib.unresolvedBacklinks];
+  if (contrib.unresolvedBacklinks?.size)
+    record.unresolvedBacklinks = [...contrib.unresolvedBacklinks];
   if (contrib.embeds?.size) record.embeds = [...contrib.embeds];
   if (contrib.headings?.size) record.headings = [...contrib.headings];
-  if (contrib.frontmatterKeys?.size) record.frontmatterKeys = [...contrib.frontmatterKeys];
-  if (contrib.frontmatterValues?.size) record.frontmatterValues = [...contrib.frontmatterValues];
+  if (contrib.frontmatterKeys?.size)
+    record.frontmatterKeys = [...contrib.frontmatterKeys];
+  if (contrib.frontmatterValues?.size)
+    record.frontmatterValues = [...contrib.frontmatterValues];
   if (contrib.aliases?.size) record.aliases = [...contrib.aliases];
   if (contrib.blocks?.size) record.blocks = [...contrib.blocks];
   return record;
 }
 
-export function deserializeContributions(record: SerializedContribRecord): FileContributions {
+export function deserializeContributions(
+  record: SerializedContribRecord,
+): FileContributions {
   const contrib: FileContributions = {};
   if (record.tags?.length) contrib.tags = new Set(record.tags);
   if (record.backlinks?.length) contrib.backlinks = new Set(record.backlinks);
-  if (record.unresolvedBacklinks?.length) contrib.unresolvedBacklinks = new Set(record.unresolvedBacklinks);
+  if (record.unresolvedBacklinks?.length)
+    contrib.unresolvedBacklinks = new Set(record.unresolvedBacklinks);
   if (record.embeds?.length) contrib.embeds = new Set(record.embeds);
   if (record.headings?.length) contrib.headings = new Set(record.headings);
-  if (record.frontmatterKeys?.length) contrib.frontmatterKeys = new Set(record.frontmatterKeys);
-  if (record.frontmatterValues?.length) contrib.frontmatterValues = new Set(record.frontmatterValues);
+  if (record.frontmatterKeys?.length)
+    contrib.frontmatterKeys = new Set(record.frontmatterKeys);
+  if (record.frontmatterValues?.length)
+    contrib.frontmatterValues = new Set(record.frontmatterValues);
   if (record.aliases?.length) contrib.aliases = new Set(record.aliases);
   if (record.blocks?.length) contrib.blocks = new Set(record.blocks);
   return contrib;
 }
 
 const INDEX_TYPES_FOR_CONTRIB: IndexType[] = [
-  "tags", "backlinks", "unresolvedBacklinks", "embeds",
-  "headings", "frontmatterKeys", "frontmatterValues", "aliases", "blocks",
+  "tags",
+  "backlinks",
+  "unresolvedBacklinks",
+  "embeds",
+  "headings",
+  "frontmatterKeys",
+  "frontmatterValues",
+  "aliases",
+  "blocks",
 ];
 
 export function contribHasData(contrib: FileContributions): boolean {
