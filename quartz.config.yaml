@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=./quartz/plugins/quartz-plugins.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/jackyzha0/quartz/refs/heads/v5/quartz/plugins/quartz-plugins.schema.json
 configuration:
   pageTitle: Extended MetadataCache
   pageTitleSuffix: ""
@@ -117,6 +117,23 @@ plugins:
     enabled: true
   - source: github:quartz-community/bases-page
     enabled: true
+  - source: github:quartz-community/note-properties
+    enabled: true
+    options:
+      includeAll: false
+      includedProperties:
+        - description
+        - tags
+        - aliases
+      excludedProperties: []
+      hidePropertiesView: false
+      delimiters: ---
+      language: yaml
+    order: 5
+    layout:
+      position: beforeBody
+      priority: 15
+      display: all
   - source: github:quartz-community/explorer
     enabled: true
     layout:
