@@ -1,0 +1,25 @@
+{
+	"nodes":[
+		{"id":"group-indexes","type":"group","x":-100,"y":190,"width":710,"height":510,"label":"Inverse Indexes (Map<Key, Set<FileId>>)"},
+		{"id":"backlinks","type":"text","text":"### Backlink Index\n\n`dest → sources`\n\nCombined + body + frontmatter","x":-80,"y":220,"width":310,"height":140},
+		{"id":"embeds","type":"text","text":"### Embed Index\n\n`dest → embedders`","x":260,"y":220,"width":310,"height":140},
+		{"id":"fm","type":"text","text":"### Frontmatter Index\n\n`key → files`\n`key+value → files`","x":-80,"y":380,"width":310,"height":140},
+		{"id":"headings","type":"text","text":"### Heading Index\n\n`heading → files`","x":260,"y":380,"width":310,"height":140},
+		{"id":"tags","type":"text","text":"### Tag Index\n\n`tag → files`\n\nCombined + body + frontmatter","x":-80,"y":540,"width":310,"height":140},
+		{"id":"other","type":"text","text":"### Also: aliases · blocks · tasks · unresolved backlinks","x":260,"y":540,"width":310,"height":140},
+		{"id":"obsidian","type":"text","text":"## Obsidian MetadataCache\n\n`changed` · `deleted` · `resolve` · `rename`","x":-100,"y":-100,"width":310,"height":200,"color":"4"},
+		{"id":"events","type":"text","text":"## Event Handlers\n\nRoute each event to the correct index update method","x":300,"y":-100,"width":310,"height":200},
+		{"id":"contrib","type":"text","text":"## Contribution Tracker\n\nPer file: which keys this file contributes to each index.\nEnables O(contributions) removal on update.","x":700,"y":-100,"width":310,"height":200,"color":"1"},
+		{"id":"idb","type":"text","text":"## IndexedDB\n\nPer-file contributions persisted.\nDelta reconciliation on restart.\nDebounced + periodic flush.","x":700,"y":520,"width":310,"height":200,"color":"3"},
+		{"id":"query","type":"text","text":"## Query API\n\n`getFilesWithTag()`\n`getBacklinksForFile()`\n... 25+ methods","x":-100,"y":800,"width":310,"height":200,"color":"5"},
+		{"id":"intern","type":"text","text":"## File Intern\n\npath ↔ numeric ID\n`Set<number>` in all indexes","x":415,"y":800,"width":310,"height":200,"color":"6"}
+	],
+	"edges":[
+		{"id":"e1","fromNode":"obsidian","fromSide":"right","toNode":"events","toSide":"left"},
+		{"id":"e2","fromNode":"events","fromSide":"right","toNode":"contrib","toSide":"left"},
+		{"id":"e6","fromNode":"contrib","fromSide":"bottom","toNode":"group-indexes","toSide":"right"},
+		{"id":"e7","fromNode":"intern","fromSide":"right","toNode":"idb","toSide":"bottom","label":"persist"},
+		{"id":"e8","fromNode":"intern","fromSide":"left","toNode":"query","toSide":"right","label":"resolve paths"},
+		{"id":"e9","fromNode":"contrib","fromSide":"bottom","toNode":"idb","toSide":"top","label":"flush"}
+	]
+}

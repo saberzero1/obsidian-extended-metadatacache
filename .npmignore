@@ -9,3 +9,5 @@ coverage/
 .gitignore
 vitest.config.*
 scripts/
+docs/
+quartz.config.yaml

@@ -1,0 +1,26 @@
+{
+	"nodes":[
+		{"id":"group-cold","type":"group","x":-420,"y":520,"width":1600,"height":240,"label":"Cold Start Path (Obsidian starting up)"},
+		{"id":"constructor","type":"text","text":"## Constructor\n\nCalls `waitForMetadataCacheThenInitialize()`\nRegisters event handlers","x":350,"y":-440,"width":300,"height":180,"color":"4"},
+		{"id":"check-links","type":"text","text":"## Check resolvedLinks\n\nAre links already populated?\n(late activation check)","x":350,"y":-180,"width":300,"height":180},
+		{"id":"wait-resolved","type":"text","text":"## Wait for Events\n\nSubscribe to `resolved` event\nWait for MetadataCache","x":350,"y":80,"width":300,"height":180},
+		{"id":"resolved-1","type":"text","text":"## 1st `resolved` Event\n\n`getFileCache()` now works.\n`resolvedLinks` may still be empty.\n\n→ `initializeAndWaitForLinks()`\n→ Build: tags, headings, frontmatter, aliases, blocks, tasks","x":-400,"y":540,"width":600,"height":200,"color":"1"},
+		{"id":"ready","type":"text","text":"## `ready` Event\n\nAll indexes complete.\nSafe to query.","x":1120,"y":1100,"width":360,"height":180,"color":"5"},
+		{"id":"late-init","type":"text","text":"## Late Activation\n\nSingle-pass `initialize()`\nAll data available immediately","x":1120,"y":-180,"width":360,"height":180,"color":"5"},
+		{"id":"resolve-per-file","type":"text","text":"## Per-file `resolve`\n\n`resolvedLinks` populated\nincremental per file\n→ `updateFileLinks()` fires","x":270,"y":540,"width":300,"height":200},
+		{"id":"resolved-2","type":"text","text":"## 2nd `resolved` Event\n\n`resolvedLinks` fully populated.\n\n→ `finalizeLinks()`\n→ Rebuild: backlinks (body/fm), unresolved, embeds","x":640,"y":540,"width":520,"height":200,"color":"6"},
+		{"id":"gate","type":"text","text":"## Completion Gate\n\nWaits for BOTH:\n✓ `initializeAndWaitForLinks` done\n✓ 2nd `resolved` fired","x":240,"y":1100,"width":360,"height":180,"color":"3"}
+	],
+	"edges":[
+		{"id":"e1","fromNode":"constructor","fromSide":"bottom","toNode":"check-links","toSide":"top"},
+		{"id":"e2","fromNode":"check-links","fromSide":"right","toNode":"late-init","toSide":"left","label":"yes"},
+		{"id":"e3","fromNode":"check-links","fromSide":"bottom","toNode":"wait-resolved","toSide":"top","label":"no"},
+		{"id":"e4","fromNode":"wait-resolved","fromSide":"bottom","toNode":"resolved-1","toSide":"top"},
+		{"id":"e5","fromNode":"resolved-1","fromSide":"right","toNode":"resolve-per-file","toSide":"left"},
+		{"id":"e6","fromNode":"resolve-per-file","fromSide":"right","toNode":"resolved-2","toSide":"left"},
+		{"id":"e7","fromNode":"resolved-1","fromSide":"bottom","toNode":"gate","toSide":"top","label":"async complete"},
+		{"id":"e8","fromNode":"resolved-2","fromSide":"bottom","toNode":"gate","toSide":"top","label":"event fires"},
+		{"id":"e9","fromNode":"gate","fromSide":"right","toNode":"ready","toSide":"left"},
+		{"id":"8db1c93370888298","fromNode":"late-init","fromSide":"bottom","toNode":"ready","toSide":"top"}
+	]
+}
