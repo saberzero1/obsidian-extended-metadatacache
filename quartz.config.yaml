@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/jackyzha0/quartz/refs/heads/v5/quartz/plugins/quartz-plugins.schema.json
 configuration:
-  pageTitle: Extended MetadataCache
+  pageTitle: Extended Metadata Cache
   pageTitleSuffix: ""
   enableSPA: true
   enablePopovers: true
