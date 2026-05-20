@@ -5,7 +5,12 @@ import type {
   TAbstractFile,
   TFile,
 } from "obsidian";
-import { Events, getAllTags, parseFrontMatterAliases } from "obsidian";
+import {
+  Events,
+  getAllTags,
+  getLinkpath,
+  parseFrontMatterAliases,
+} from "obsidian";
 import { FileIntern } from "./file-intern.js";
 import { InverseIndex, UniqueInverseIndex } from "./inverse-index.js";
 import {
@@ -97,8 +102,61 @@ export class ExtendedMetadataCache
       options?.flushDebounceMs ?? DEFAULT_FLUSH_DEBOUNCE_MS;
     this.flushIntervalMs =
       options?.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS;
+    this.waitForMetadataCacheThenInitialize();
+  }
+
+  private waitForMetadataCacheThenInitialize(): void {
     this.registerEvents();
-    this.initialize();
+
+    const resolvedLinks = this.app.metadataCache.resolvedLinks;
+    const linksAlreadyPopulated = Object.keys(resolvedLinks).some(
+      (src) => Object.keys(resolvedLinks[src] ?? {}).length > 0,
+    );
+
+    if (linksAlreadyPopulated) {
+      this.initialize();
+      return;
+    }
+
+    let initialBuildDone = false;
+
+    const onResolved = () => {
+      if (!initialBuildDone) {
+        initialBuildDone = true;
+        this.initializeAndWaitForLinks(onResolved);
+      } else {
+        this.app.metadataCache.off("resolved", onResolved);
+        this.finalizeLinks();
+      }
+    };
+
+    this.app.metadataCache.on("resolved", onResolved);
+  }
+
+  private async initializeAndWaitForLinks(
+    _onResolved: () => void,
+  ): Promise<void> {
+    let loadedFromDb = false;
+
+    if (this.persistEnabled) {
+      loadedFromDb = await this.tryLoadFromDb();
+    }
+
+    if (loadedFromDb) {
+      await this.reconcileWithVault();
+    } else {
+      await this.buildInitialIndex();
+    }
+
+    if (this.persistEnabled && this.store?.isOpen) {
+      this.startPeriodicFlush();
+    }
+  }
+
+  private finalizeLinks(): void {
+    this.rebuildAllLinkIndexes();
+    this._isReady = true;
+    this.trigger("ready");
   }
 
   private registerEvents(): void {
@@ -143,12 +201,16 @@ export class ExtendedMetadataCache
       await this.buildInitialIndex();
     }
 
+    this.rebuildAllLinkIndexes();
+
     if (this.persistEnabled && this.store?.isOpen) {
       this.startPeriodicFlush();
     }
 
-    this._isReady = true;
-    this.trigger("ready");
+    if (!this._isReady) {
+      this._isReady = true;
+      this.trigger("ready");
+    }
   }
 
   private async tryLoadFromDb(): Promise<boolean> {
@@ -343,6 +405,75 @@ export class ExtendedMetadataCache
     }
   }
 
+  private rebuildAllLinkIndexes(): void {
+    this.backlinkIndex.clear();
+    this.unresolvedBacklinkIndex.clear();
+    this.embedIndex.clear();
+
+    for (const [, contrib] of this.contributions) {
+      contrib.backlinks = undefined;
+      contrib.unresolvedBacklinks = undefined;
+      contrib.embeds = undefined;
+    }
+
+    const resolvedLinks = this.app.metadataCache.resolvedLinks;
+    const unresolvedLinks = this.app.metadataCache.unresolvedLinks;
+
+    for (const sourcePath of Object.keys(resolvedLinks)) {
+      const fileId = this.files.intern(sourcePath);
+      const contrib = this.getOrCreateContributions(fileId);
+
+      const dests = resolvedLinks[sourcePath];
+      if (dests) {
+        const backlinkKeys = new Set<string>();
+        for (const destPath of Object.keys(dests)) {
+          backlinkKeys.add(destPath);
+          this.backlinkIndex.add(destPath, fileId);
+        }
+        contrib.backlinks = backlinkKeys;
+      }
+    }
+
+    for (const sourcePath of Object.keys(unresolvedLinks)) {
+      const fileId = this.files.intern(sourcePath);
+      const contrib = this.getOrCreateContributions(fileId);
+
+      const dests = unresolvedLinks[sourcePath];
+      if (dests) {
+        const unresolvedKeys = new Set<string>();
+        for (const destName of Object.keys(dests)) {
+          const normalized = destName.toLowerCase();
+          unresolvedKeys.add(normalized);
+          this.unresolvedBacklinkIndex.add(normalized, fileId);
+        }
+        contrib.unresolvedBacklinks = unresolvedKeys;
+      }
+    }
+
+    for (const file of this.app.vault.getMarkdownFiles()) {
+      const fileId = this.files.getId(file.path);
+      if (fileId === undefined) continue;
+
+      const cache = this.app.metadataCache.getFileCache(file);
+      if (!cache?.embeds) continue;
+
+      const contrib = this.getOrCreateContributions(fileId);
+      const embedKeys = new Set<string>();
+      for (const embed of cache.embeds) {
+        const linkpath = getLinkpath(embed.link);
+        const dest = this.app.metadataCache.getFirstLinkpathDest(
+          linkpath,
+          file.path,
+        );
+        const destPath = dest?.path ?? linkpath;
+        embedKeys.add(destPath);
+        this.embedIndex.add(destPath, fileId);
+      }
+      contrib.embeds = embedKeys;
+      this.markDirty(fileId, file.path);
+    }
+  }
+
   private indexFileFromCache(path: string, cache: CachedMetadata): void {
     const fileId = this.files.intern(path);
     const contrib = this.getOrCreateContributions(fileId);
@@ -389,11 +520,12 @@ export class ExtendedMetadataCache
 
     const embedKeys = new Set<string>();
     for (const embed of cache.embeds) {
+      const linkpath = getLinkpath(embed.link);
       const dest = this.app.metadataCache.getFirstLinkpathDest(
-        embed.link,
+        linkpath,
         this.files.getPath(fileId) ?? "",
       );
-      const destPath = dest?.path ?? embed.link;
+      const destPath = dest?.path ?? linkpath;
       embedKeys.add(destPath);
       this.embedIndex.add(destPath, fileId);
     }
@@ -849,6 +981,7 @@ function normalizePrimitive(value: unknown): string {
   if (typeof value === "string") return value.toLowerCase();
   if (typeof value === "number" || typeof value === "boolean")
     return String(value);
+  if (value instanceof Date) return value.toISOString().toLowerCase();
   return JSON.stringify(value).toLowerCase();
 }
 
