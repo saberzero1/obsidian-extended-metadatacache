@@ -1,0 +1,9 @@
+{
+  "id": "extended-metadatacache-test",
+  "name": "Extended MetadataCache Test Host",
+  "version": "0.0.1",
+  "minAppVersion": "1.4.0",
+  "description": "Test host plugin for E2E testing obsidian-extended-metadatacache",
+  "author": "saberzero1",
+  "isDesktopOnly": true
+}

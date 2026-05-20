@@ -5,3 +5,6 @@ dist/
 coverage/
 .DS_Store
 *.log
+.obsidian-cache/
+test/plugin/main.js
+test/vault/.obsidian/
