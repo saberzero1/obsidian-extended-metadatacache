@@ -9,9 +9,9 @@ Obsidian's `MetadataCache` only offers file → metadata lookups. This library b
 | Query                                          | Method                                     |
 | ---------------------------------------------- | ------------------------------------------ |
 | Which files have `#tag`?                       | `getFilesWithTag(tag)`                     |
-| Which files link to `path`?                    | `getBacklinksForFile(destPath)`            |
+| Which files link to `file`?                    | `getBacklinksForFile(file)`                |
 | Which files have unresolved links to `name`?   | `getUnresolvedBacklinks(destName)`         |
-| Which files embed `path`?                      | `getFilesEmbedding(destPath)`              |
+| Which files embed `file`?                      | `getFilesEmbedding(file)`                  |
 | Which files have heading `text`?               | `getFilesWithHeading(heading)`             |
 | Which files have frontmatter key `key`?        | `getFilesWithFrontmatterKey(key)`          |
 | Which files have `key = value` in frontmatter? | `getFilesWithFrontmatterValue(key, value)` |
@@ -60,8 +60,16 @@ export default class MyPlugin extends Plugin {
   }
 
   private onCacheReady(cache: ExtendedMetadataCacheAPI) {
+    // Query by tag
     const files = cache.getFilesWithTag("#project");
     console.log("Files tagged #project:", [...files]);
+
+    // Query backlinks — accepts TFile or string path
+    const activeFile = this.app.workspace.getActiveFile();
+    if (activeFile) {
+      const backlinks = cache.getBacklinksForFile(activeFile);
+      console.log("Backlinks:", [...backlinks]);
+    }
   }
 }
 ```
@@ -88,7 +96,7 @@ if (hasAPI()) {
 
 ### Query methods
 
-All query methods return `ReadonlySet<string>` containing vault-absolute file paths (matching `TFile.path`).
+Most query methods return `ReadonlySet<string>` containing vault-absolute file paths (matching `TFile.path`). Methods that accept a file reference take `TFile | string` for ergonomic use with both file objects and paths.
 
 ```typescript
 interface ExtendedMetadataCacheAPI {
@@ -97,10 +105,10 @@ interface ExtendedMetadataCacheAPI {
   getFilesWithTag(tag: string): ReadonlySet<string>;
   getAllTagsWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
-  getBacklinksForFile(destPath: string): ReadonlySet<string>;
+  getBacklinksForFile(file: TFile | string): ReadonlySet<string>;
   getUnresolvedBacklinks(destName: string): ReadonlySet<string>;
 
-  getFilesEmbedding(destPath: string): ReadonlySet<string>;
+  getFilesEmbedding(file: TFile | string): ReadonlySet<string>;
 
   getFilesWithHeading(heading: string): ReadonlySet<string>;
   getAllHeadingsWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
@@ -115,7 +123,7 @@ interface ExtendedMetadataCacheAPI {
   getFilesWithAlias(alias: string): ReadonlySet<string>;
   getAllAliasesWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
-  getFileWithBlockId(blockId: string): string | null;
+  getFileWithBlockId(blockId: string): TFile | null;
 
   destroy(): void;
 }

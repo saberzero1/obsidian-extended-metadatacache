@@ -1,10 +1,16 @@
 # Changelog
 
-## 0.2.1
+## 0.3.0
+
+### Breaking Changes
+
+- **`getBacklinksForFile(file)`** and **`getFilesEmbedding(file)`** now accept `TFile | string` instead of only `string`. Existing code passing strings continues to work.
+- **`getFileWithBlockId(blockId)`** now returns `TFile | null` instead of `string | null`. Consumers that used the string return value to look up files can now use the returned `TFile` directly.
+- Minimum Obsidian version bumped from `>=1.4.0` to `>=1.5.7` (required for `Vault.getFileByPath()`).
 
 ### Changed
 
-- Updated README with two-phase startup sequence documentation, normalization details (Date, nested objects, embed subpaths, canvas sources), and development/testing guide
+- Updated README with API signature changes, TFile usage example, and updated interface documentation
 
 ## 0.2.0
 

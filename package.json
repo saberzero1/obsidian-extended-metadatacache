@@ -1,6 +1,6 @@
 {
   "name": "obsidian-extended-metadatacache",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Inverse lookup complement to Obsidian's MetadataCache — tag→files, backlinks, heading→files, frontmatter→files, and more.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -51,7 +51,7 @@
   },
   "homepage": "https://github.com/saberzero1/obsidian-extended-metadatacache#readme",
   "peerDependencies": {
-    "obsidian": ">=1.4.0"
+    "obsidian": ">=1.5.7"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.0.0",
