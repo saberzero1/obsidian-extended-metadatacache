@@ -8,3 +8,4 @@ eslint.config.*
 coverage/
 .gitignore
 vitest.config.*
+scripts/
