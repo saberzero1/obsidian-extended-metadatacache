@@ -8,7 +8,7 @@ Obsidian's MetadataCache has a hard-coded `"md" === file.extension` check in its
 - `getMarkdownFiles()` does not include `.canvas` files
 - Tags, links, headings, and other markdown content inside canvas text cards are **invisible** to MetadataCache
 
-This was confirmed by WhiteNoise (Obsidian Team): *"We currently do not process #tags (and other things) contained in canvas cards."*
+This was confirmed by WhiteNoise (Obsidian Team): *"We currently do not process `#tags` (and other things) contained in canvas cards."*
 
 ## What DOES work: file node references in resolvedLinks
 
