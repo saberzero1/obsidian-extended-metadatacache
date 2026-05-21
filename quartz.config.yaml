@@ -242,19 +242,8 @@ plugins:
       subdir: plugin
     enabled: true
     options:
-      theme: its-theme
+      theme: gummy-revived
       mode: both
-      styleSettings:
-        {
-          "ITS@@ITS-Table-Alt-Colors": "tables-no-alt-background",
-          "ITS@@ITS-Tag-Style": "tag-notion",
-          "ITS@@callout-style": "callout-bordered",
-          "ITS@@metadata-title-align": "left",
-          "ITS@@embed-clean": true,
-          "ITS@@tables-wide": true,
-          "ITS@@bases-non-its-colrow-styling": true,
-          "ITS@@select": "wotc-beyond",
-        }
   - source: github:quartz-community/encrypted-pages
     enabled: true
     options:
