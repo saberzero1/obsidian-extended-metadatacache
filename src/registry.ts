@@ -9,7 +9,7 @@ import type {
 
 const API_MAJOR = 0;
 const API_MINOR = 1;
-const VERSION = "0.4.0";
+const VERSION = "0.5.0";
 
 const REGISTRY_SYMBOL = Symbol.for("obsidian-extended-metadatacache/registry");
 

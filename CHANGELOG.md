@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.0
+
+### Added
+
+- **`getAllBacklinksWithFiles()`** and **`getAllEmbedsWithFiles()`** — bulk listing methods completing the API symmetry across all index types
+- **`isDestroyed`** property on `ExtendedMetadataCacheAPI` — check if an instance has been destroyed
+- Unit tests for persistence serialization round-trip (9 tests)
+- E2E tests for incremental file edit, file deletion, file rename, nested frontmatter values, bulk listing methods, isDestroyed
+
+### Fixed
+
+- Singleton registry now detects destroyed instances and creates a fresh one on next `getAPI()` call, preventing stale instance reuse
+- Removed dead `indexFileLinks` / `indexBacklinks` methods that were no-ops during cold start (link indexes are built by `rebuildAllLinkIndexes` after `resolved`)
+
 ## 0.4.0
 
 ### Added

@@ -131,10 +131,12 @@ interface ExtendedMetadataCacheAPI {
   getBacklinksForFile(file: TFile | string): ReadonlySet<string>;
   getBacklinksFromBody(file: TFile | string): ReadonlySet<string>;
   getBacklinksFromFrontmatter(file: TFile | string): ReadonlySet<string>;
+  getAllBacklinksWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
   getUnresolvedBacklinks(destName: string): ReadonlySet<string>;
 
   // Embeds
   getFilesEmbedding(file: TFile | string): ReadonlySet<string>;
+  getAllEmbedsWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
   // Headings
   getFilesWithHeading(heading: string): ReadonlySet<string>;
