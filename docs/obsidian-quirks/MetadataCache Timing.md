@@ -68,5 +68,5 @@ This behavior was confirmed by:
 
 [^resolved-docs]: [MetadataCache.on('resolved') — Obsidian Developer Docs](https://docs.obsidian.md/Reference/TypeScript+API/MetadataCache/on('resolved'))
 [^changed-docs]: [MetadataCache.on('changed') — Obsidian Developer Docs](https://docs.obsidian.md/Reference/TypeScript+API/MetadataCache/on('changed'))
-[^tasks-cache]: [obsidian-tasks Cache.ts — `loadedAfterFirstResolve` pattern](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/main/src/Obsidian/Cache.ts)
-[^dataview-index]: [obsidian-dataview index.ts — skips null caches, defers to `onLayoutReady`](https://github.com/blacksmithgu/obsidian-dataview/blob/master/src/data-index/index.ts)
+[^tasks-cache]: [obsidian-tasks Cache.ts — `loadedAfterFirstResolve` pattern](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/ba9f184d6704/src/Obsidian/Cache.ts)
+[^dataview-index]: [obsidian-dataview index.ts — skips null caches, defers to `onLayoutReady`](https://github.com/blacksmithgu/obsidian-dataview/blob/5ad0994ff384/src/data-index/index.ts)

@@ -51,6 +51,6 @@ If `related: "[[target]]"` and `see-also: "[[target]]"` both exist in the same f
 
 [^fm-links-api]: [FrontmatterLinkCache — Obsidian Developer Docs](https://docs.obsidian.md/Reference/TypeScript+API/FrontmatterLinkCache)
 [^dataview-fm-links]: [Dataview PR #2030 — Add support for frontmatter links](https://github.com/blacksmithgu/obsidian-dataview/pull/2030)
-[^tasks-link-yaml]: [obsidian-tasks test data — link_in_yaml.json](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/main/tests/Obsidian/__test_data__/link_in_yaml.json)
-[^tasks-link-body]: [obsidian-tasks test data — link_in_file_body.json](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/main/tests/Obsidian/__test_data__/link_in_file_body.json)
-[^tasks-resolved]: [obsidian-tasks test data — resolvedLinks.json](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/main/tests/Obsidian/__test_data__/metadataCache/resolvedLinks.json)
+[^tasks-link-yaml]: [obsidian-tasks test data — link_in_yaml.json](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/ba9f184d6704/tests/Obsidian/__test_data__/link_in_yaml.json)
+[^tasks-link-body]: [obsidian-tasks test data — link_in_file_body.json](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/ba9f184d6704/tests/Obsidian/__test_data__/link_in_file_body.json)
+[^tasks-resolved]: [obsidian-tasks test data — resolvedLinks.json](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/ba9f184d6704/tests/Obsidian/__test_data__/metadataCache/resolvedLinks.json)

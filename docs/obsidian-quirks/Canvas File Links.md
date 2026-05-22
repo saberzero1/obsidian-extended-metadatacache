@@ -58,8 +58,8 @@ Canvas files use the JSON Canvas format[^jsoncanvas] (open spec at [jsoncanvas.o
 import type { CanvasData, CanvasTextData, CanvasFileData } from "obsidian/canvas";
 ```
 
-[^advanced-canvas-patcher]: [Advanced Canvas — MetadataCachePatcher](https://github.com/Developer-Mike/obsidian-advanced-canvas/blob/main/src/patcher/metadata-cache.ts) intercepts `computeFileMetadataAsync` to bypass the `.md` extension check, proving it exists in the original code.
+[^advanced-canvas-patcher]: [Advanced Canvas — MetadataCachePatcher](https://github.com/Developer-Mike/obsidian-advanced-canvas/blob/050589d474a5/src/patcher/metadata-cache.ts) intercepts `computeFileMetadataAsync` to bypass the `.md` extension check, proving it exists in the original code.
 [^whitenoise-tags]: [Obsidian Forum — "The tag in the note and canvas does not connect to the graphic"](https://forum.obsidian.md/t/the-tag-in-the-note-and-canvas-does-not-connect-to-the-graphic/90892/4) — WhiteNoise, Obsidian Team member.
 [^advanced-canvas]: [Advanced Canvas plugin](https://github.com/Developer-Mike/obsidian-advanced-canvas) — provides "Full Metadata Cache Support" for canvas files via monkey-patching.
-[^jsoncanvas]: [JSON Canvas Specification v1.0](https://github.com/obsidianmd/jsoncanvas/blob/main/spec/1.0.md)
-[^canvas-dts]: [obsidian-api canvas.d.ts](https://github.com/obsidianmd/obsidian-api/blob/master/canvas.d.ts)
+[^jsoncanvas]: [JSON Canvas Specification v1.0](https://github.com/obsidianmd/jsoncanvas/blob/6a703e28021d/spec/1.0.md)
+[^canvas-dts]: [obsidian-api canvas.d.ts](https://github.com/obsidianmd/obsidian-api/blob/8e116bf516c1/canvas.d.ts)

@@ -45,7 +45,7 @@ Key observations:
 
 Additionally, an Obsidian forum post[^forum-tags-discrepancy] confirms: *"Tags in the body are stored in .tags (prefixed with a #), tags in frontmatter are stored in frontmatter.tags (without a #)."*
 
-[^tasks-yaml-tags]: [obsidian-tasks test data — yaml_tags_with_two_values_on_two_lines.json](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/main/tests/Obsidian/__test_data__/yaml_tags_with_two_values_on_two_lines.json)
+[^tasks-yaml-tags]: [obsidian-tasks test data — yaml_tags_with_two_values_on_two_lines.json](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/ba9f184d6704/tests/Obsidian/__test_data__/yaml_tags_with_two_values_on_two_lines.json)
 [^forum-tags-discrepancy]: [Obsidian Forum — "Tags in front matter doesn't update metadata cache"](https://forum.obsidian.md/t/tags-in-front-matter-doesnt-update-metadata-cache/67394)
 
 ## How this library handles it

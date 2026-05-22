@@ -50,5 +50,5 @@ See [[Links Body vs Frontmatter]] for how these links are handled in the backlin
 
 Obsidian adds a `position` key to `FrontMatterCache` with the document position of the frontmatter block. This library excludes it from indexing.
 
-[^frontmatter-api]: [FrontMatterCache — Obsidian API](https://github.com/obsidianmd/obsidian-api/blob/master/obsidian.d.ts) — the interface extends `CacheItem` and uses `[key: string]: any` for arbitrary YAML keys.
-[^dataview-parse-fm]: [Dataview markdown-file.ts — parseFrontmatter](https://github.com/blacksmithgu/obsidian-dataview/blob/master/src/data-import/markdown-file.ts) — checks `value instanceof Date` to convert YAML timestamps to Luxon DateTime.
+[^frontmatter-api]: [FrontMatterCache — Obsidian API](https://github.com/obsidianmd/obsidian-api/blob/8e116bf516c1/obsidian.d.ts) — the interface extends `CacheItem` and uses `[key: string]: any` for arbitrary YAML keys.
+[^dataview-parse-fm]: [Dataview markdown-file.ts — parseFrontmatter](https://github.com/blacksmithgu/obsidian-dataview/blob/5ad0994ff384/src/data-import/markdown-file.ts) — checks `value instanceof Date` to convert YAML timestamps to Luxon DateTime.
