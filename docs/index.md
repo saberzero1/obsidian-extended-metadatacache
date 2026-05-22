@@ -23,10 +23,12 @@ Inverse lookup complement to Obsidian's `MetadataCache`. Where `MetadataCache` a
 - [[getBacklinksForFile]] — files linking to a target (combined)
 - [[getBacklinksFromBody]] — body-only backlinks
 - [[getBacklinksFromFrontmatter]] — frontmatter-only backlinks
+- [[getAllBacklinksWithFiles]] — all backlink targets with their source sets
 - [[getUnresolvedBacklinks]] — files with unresolved links to a name
 
 ### Embeds
 - [[getFilesEmbedding]] — files that embed a target
+- [[getAllEmbedsWithFiles]] — all embed targets with their embedding file sets
 
 ### Headings
 - [[getFilesWithHeading]] — files containing a heading
