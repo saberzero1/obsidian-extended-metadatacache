@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.1
+
+### Fixed
+
+- Added missing `isDestroyed` property to README API interface
+
+### Changed
+
+- Documentation: added 23 footnote citations linking to primary sources (Obsidian Developer Docs, Obsidian Forum, obsidian-tasks test data, obsidian-dataview source, Advanced Canvas patcher)
+- Documentation: replaced unofficial doc URLs with official `docs.obsidian.md` links
+- Documentation: pinned all GitHub source links to commit hashes to prevent link rot
+- Documentation: added line number anchors to source code citations
+
 ## 0.5.0
 
 ### Added
