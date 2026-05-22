@@ -711,4 +711,161 @@ describe("Extended MetadataCache E2E", function () {
       expect(result.mismatches).toEqual([]);
     });
   });
+
+  describe("bulk listing methods", () => {
+    it("getAllBacklinksWithFiles should return non-empty map", async () => {
+      const result = await browser.executeObsidian(() => {
+        const api = (window as any).extendedMetadataCache.api;
+        const all = api.getAllBacklinksWithFiles();
+        return { size: all.size, hasBacklinksTarget: all.has("backlinks-target.md") };
+      });
+
+      expect(result.size).toBeGreaterThan(0);
+      expect(result.hasBacklinksTarget).toBe(true);
+    });
+
+    it("getAllEmbedsWithFiles should return non-empty map", async () => {
+      const result = await browser.executeObsidian(() => {
+        const api = (window as any).extendedMetadataCache.api;
+        const all = api.getAllEmbedsWithFiles();
+        return { size: all.size };
+      });
+
+      expect(result.size).toBeGreaterThan(0);
+    });
+  });
+
+  describe("incremental updates", () => {
+    it("should update indexes when a file is modified", async () => {
+      const result = await browser.executeObsidian(({ app, obsidian }) => {
+        return new Promise<{ before: number; after: number }>((resolve) => {
+          const api = (window as any).extendedMetadataCache.api;
+          const before = api.getFilesWithTag("#dynamic-test-tag").size;
+
+          const file = app.vault.getFileByPath("tags-test.md");
+          if (!file) {
+            resolve({ before, after: -1 });
+            return;
+          }
+
+          api.on("file-updated", (path: string) => {
+            if (path === "tags-test.md") {
+              const after = api.getFilesWithTag("#dynamic-test-tag").size;
+              app.vault
+                .process(file as any, (content: string) =>
+                  content.replace("\n#dynamic-test-tag", ""),
+                )
+                .then(() => {
+                  resolve({ before, after });
+                });
+            }
+          });
+
+          app.vault.process(file as any, (content: string) => content + "\n#dynamic-test-tag");
+        });
+      });
+
+      expect(result.before).toBe(0);
+      expect(result.after).toBe(1);
+    });
+
+    it("should update indexes when a file is deleted and recreated", async () => {
+      const result = await browser.executeObsidian(({ app }) => {
+        return new Promise<{ existed: boolean; afterDelete: number; afterRecreate: number }>(
+          (resolve) => {
+            const api = (window as any).extendedMetadataCache.api;
+
+            app.vault
+              .create("_temp-delete-test.md", "---\ntags:\n  - delete-test\n---\n# Temp\n")
+              .then((file) => {
+                const checkAfterIndex = () => {
+                  const existed = api.getFilesWithTag("#delete-test").size > 0;
+
+                  api.on("file-updated", (path: string) => {
+                    if (path === "_temp-delete-test.md") {
+                      const afterDelete = api.getFilesWithTag("#delete-test").size;
+                      resolve({ existed, afterDelete, afterRecreate: -1 });
+                    }
+                  });
+
+                  app.vault.delete(file);
+                };
+
+                setTimeout(checkAfterIndex, 500);
+              });
+          },
+        );
+      });
+
+      expect(result.existed).toBe(true);
+      expect(result.afterDelete).toBe(0);
+    });
+
+    it("should update indexes when a file is renamed", async () => {
+      const result = await browser.executeObsidian(({ app }) => {
+        return new Promise<{ beforePath: boolean; afterOldPath: boolean; afterNewPath: boolean }>(
+          (resolve) => {
+            const api = (window as any).extendedMetadataCache.api;
+
+            app.vault
+              .create("_temp-rename-src.md", "---\ntags:\n  - rename-test\n---\n# Rename\n")
+              .then((file) => {
+                setTimeout(() => {
+                  const beforePath = api.getFilesWithTag("#rename-test").has("_temp-rename-src.md");
+
+                  app.vault.rename(file, "_temp-rename-dst.md").then(() => {
+                    setTimeout(() => {
+                      const afterOldPath = api
+                        .getFilesWithTag("#rename-test")
+                        .has("_temp-rename-src.md");
+                      const afterNewPath = api
+                        .getFilesWithTag("#rename-test")
+                        .has("_temp-rename-dst.md");
+
+                      app.vault.delete(app.vault.getFileByPath("_temp-rename-dst.md")!).then(() => {
+                        resolve({ beforePath, afterOldPath, afterNewPath });
+                      });
+                    }, 500);
+                  });
+                }, 500);
+              });
+          },
+        );
+      });
+
+      expect(result.beforePath).toBe(true);
+      expect(result.afterOldPath).toBe(false);
+      expect(result.afterNewPath).toBe(true);
+    });
+  });
+
+  describe("nested frontmatter values", () => {
+    it("should index nested object values via JSON stringify", async () => {
+      const result = await browser.executeObsidian(({ app, obsidian }) => {
+        const api = (window as any).extendedMetadataCache.api;
+        const file = app.vault.getFileByPath("frontmatter-values-test.md");
+        if (!file) return { found: false };
+        const cache = app.metadataCache.getFileCache(file as any);
+        const nested = cache?.frontmatter?.["nested"];
+        if (!nested || typeof nested !== "object") return { found: false, type: typeof nested };
+
+        const files = [...api.getFilesWithFrontmatterValue("nested", nested)];
+        return { found: true, files, type: typeof nested };
+      });
+
+      expect(result.found).toBe(true);
+      expect(result.files).toContain("frontmatter-values-test.md");
+    });
+  });
+
+  describe("isDestroyed", () => {
+    it("should report isDestroyed as false for active instance", async () => {
+      const result = await browser.executeObsidian(() => {
+        const api = (window as any).extendedMetadataCache.api;
+        return api.isDestroyed;
+      });
+
+      expect(result).toBe(false);
+    });
+  });
 });
