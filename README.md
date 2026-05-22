@@ -120,6 +120,7 @@ Most query methods return `ReadonlySet<string>` containing vault-absolute file p
 ```typescript
 interface ExtendedMetadataCacheAPI {
   readonly isReady: boolean;
+  readonly isDestroyed: boolean;
 
   // Tags (combined, body-only, frontmatter-only)
   getFilesWithTag(tag: string): ReadonlySet<string>;
