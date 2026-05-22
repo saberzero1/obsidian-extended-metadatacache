@@ -2,7 +2,7 @@
 
 ## How Obsidian stores YAML values
 
-`FrontMatterCache` is typed as `{ [key: string]: any }`. The actual runtime types depend on YAML parsing:
+`FrontMatterCache` is typed as `{ [key: string]: any }`[^frontmatter-api]. The actual runtime types depend on YAML parsing:
 
 | YAML syntax | JavaScript type | Example |
 |---|---|---|
@@ -21,7 +21,7 @@
 
 ## Date handling
 
-Unquoted ISO 8601 dates like `2024-01-15` are parsed by YAML as **timestamp** types, producing native JavaScript `Date` objects — NOT strings, NOT Moment objects.
+Unquoted ISO 8601 dates like `2024-01-15` are parsed by YAML as **timestamp** types, producing native JavaScript `Date` objects — NOT strings, NOT Moment objects. This is confirmed by Dataview's `parseFrontmatter` function[^dataview-parse-fm], which explicitly checks `value instanceof Date`.
 
 Quoted dates like `"2024-01-15"` remain strings.
 
@@ -49,3 +49,6 @@ See [[Links Body vs Frontmatter]] for how these links are handled in the backlin
 ## The `position` key
 
 Obsidian adds a `position` key to `FrontMatterCache` with the document position of the frontmatter block. This library excludes it from indexing.
+
+[^frontmatter-api]: [FrontMatterCache — Obsidian API](https://github.com/obsidianmd/obsidian-api/blob/master/obsidian.d.ts) — the interface extends `CacheItem` and uses `[key: string]: any` for arbitrary YAML keys.
+[^dataview-parse-fm]: [Dataview markdown-file.ts — parseFrontmatter](https://github.com/blacksmithgu/obsidian-dataview/blob/master/src/data-import/markdown-file.ts) — checks `value instanceof Date` to convert YAML timestamps to Luxon DateTime.

@@ -34,11 +34,11 @@ The first `resolved` event signals that file metadata is parsed, but link resolu
 
 ### `resolved` fires multiple times
 
-The Obsidian docs say: *"Called when all files has been resolved. This will be fired each time files get modified after the initial load."* It fires on initial load AND after each subsequent file change.
+The Obsidian docs say: *"Called when all files has been resolved. This will be fired each time files get modified after the initial load."*[^resolved-docs] It fires on initial load AND after each subsequent file change.
 
 ### The `changed` event is NOT fired on rename
 
-From the Obsidian docs: *"Note: This is not called when a file is renamed for performance reasons. You must hook the vault rename event for those."*
+From the Obsidian docs: *"Note: This is not called when a file is renamed for performance reasons. You must hook the vault rename event for those."*[^changed-docs]
 
 ## Recommended pattern
 
@@ -61,7 +61,12 @@ See [[Startup Sequence]] for the full two-phase initialization approach.
 ## Evidence
 
 This behavior was confirmed by:
-- Obsidian official documentation
-- obsidian-tasks plugin source (uses `loadedAfterFirstResolve` flag)
-- obsidian-dataview plugin source (defers to `onLayoutReady`, skips null caches)
+- Obsidian official documentation[^resolved-docs][^changed-docs]
+- obsidian-tasks plugin source[^tasks-cache] (uses `loadedAfterFirstResolve` flag)
+- obsidian-dataview plugin source[^dataview-index] (defers to `onLayoutReady`, skips null caches)
 - Direct E2E testing against Obsidian v1.12.7
+
+[^resolved-docs]: [MetadataCache.on('resolved') — Obsidian Developer Docs](https://github.com/obsidianmd/obsidian-developer-docs/blob/main/en/Reference/TypeScript%20API/MetadataCache/on('resolved').md)
+[^changed-docs]: [MetadataCache.on('changed') — Obsidian Developer Docs](https://github.com/obsidianmd/obsidian-developer-docs/blob/main/en/Reference/TypeScript%20API/MetadataCache/on('changed').md)
+[^tasks-cache]: [obsidian-tasks Cache.ts — `loadedAfterFirstResolve` pattern](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/main/src/Obsidian/Cache.ts)
+[^dataview-index]: [obsidian-dataview index.ts — skips null caches, defers to `onLayoutReady`](https://github.com/blacksmithgu/obsidian-dataview/blob/master/src/data-index/index.ts)

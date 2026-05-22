@@ -10,7 +10,7 @@ Embed syntax in Obsidian can include subpaths:
 
 In `CachedMetadata.embeds`, the `link` field contains the full text: `"note#Heading"` or `"note#^block-id"`.
 
-When resolving via `getFirstLinkpathDest(link, sourcePath)`, passing the full subpath fails to resolve because `getFirstLinkpathDest` expects just the file path portion.
+When resolving via `getFirstLinkpathDest(link, sourcePath)`[^linkpath-docs], passing the full subpath fails to resolve because `getFirstLinkpathDest` expects just the file path portion.
 
 ## The fix
 
@@ -32,3 +32,5 @@ const dest = app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
 The [[getFilesEmbedding]] method maps to the **target file**, not the specific heading or block. If `note-a.md` embeds `![[note-b#Heading]]`, then `getFilesEmbedding("note-b.md")` returns `note-a.md`.
 
 There is currently no "which files embed heading X of file Y" query — only "which files embed file Y".
+
+[^linkpath-docs]: [MetadataCache.getFirstLinkpathDest — Obsidian Developer Docs](https://github.com/obsidianmd/obsidian-developer-docs/blob/main/en/Reference/TypeScript%20API/MetadataCache/getFirstLinkpathDest.md) — the `linkpath` parameter is the path portion of a linktext, without subpath or display text.

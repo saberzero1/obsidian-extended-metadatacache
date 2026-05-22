@@ -12,7 +12,7 @@ getFilesWithCompletedTasks(): ReadonlySet<string>
 
 Returns files containing completed tasks — any task whose status character is not a space.
 
-Per Obsidian's official documentation: *"The space character `' '` is interpreted as an incomplete task. Any other character is interpreted as completed task."*
+Per Obsidian's official documentation[^listitem-docs]: *"The space character `' '` is interpreted as an incomplete task. Any other character is interpreted as completed task."*
 
 This means `[x]`, `[X]`, `[/]`, `[-]`, `[>]`, `[!]`, and any other character all count as completed.
 
@@ -36,3 +36,5 @@ If you need Dataview-style semantics, use `getFilesWithTaskStatus(["x", "X"])` i
 - [[getFilesWithOpenTasks]] — the inverse
 - [[getFilesWithTaskStatus]] — custom status queries
 - [[Task Status Values]] — full details
+
+[^listitem-docs]: [ListItemCache — Obsidian Developer Docs](https://obsidian-developer-docs.pages.dev/Reference/TypeScript-API/ListItemCache)

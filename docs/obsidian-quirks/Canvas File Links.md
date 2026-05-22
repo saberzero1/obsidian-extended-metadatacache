@@ -2,13 +2,13 @@
 
 ## MetadataCache does NOT index canvas files
 
-Obsidian's MetadataCache has a hard-coded `"md" === file.extension` check in its internal `computeFileMetadataAsync` method. This means:
+Obsidian's MetadataCache has a hard-coded `"md" === file.extension` check in its internal `computeFileMetadataAsync` method[^advanced-canvas-patcher]. This means:
 
 - `getFileCache("file.canvas")` returns `null`
 - `getMarkdownFiles()` does not include `.canvas` files
 - Tags, links, headings, and other markdown content inside canvas text cards are **invisible** to MetadataCache
 
-This was confirmed by WhiteNoise (Obsidian Team): *"We currently do not process `#tags` (and other things) contained in canvas cards."*
+This was confirmed by WhiteNoise (Obsidian Team)[^whitenoise-tags]: *"We currently do not process `#tags` (and other things) contained in canvas cards."*
 
 ## What DOES work: file node references in resolvedLinks
 
@@ -48,12 +48,18 @@ Since MetadataCache doesn't expose canvas content, this library cannot index:
 - Frontmatter inside canvas text cards (Obsidian removes it from text cards anyway)
 - Edge connections between canvas cards
 
-This is **complete parity with what Obsidian exposes**. Plugins that need canvas content metadata (like Advanced Canvas) must parse the `.canvas` JSON manually or monkey-patch MetadataCache — both approaches are outside the scope of this library.
+This is **complete parity with what Obsidian exposes**. Plugins that need canvas content metadata (like Advanced Canvas[^advanced-canvas]) must parse the `.canvas` JSON manually or monkey-patch MetadataCache — both approaches are outside the scope of this library.
 
 ## The canvas file format
 
-Canvas files use the JSON Canvas format (open spec at [jsoncanvas.org](https://jsoncanvas.org)). Type definitions are available from `obsidian/canvas`:
+Canvas files use the JSON Canvas format[^jsoncanvas] (open spec at [jsoncanvas.org](https://jsoncanvas.org)). Type definitions are available from `obsidian/canvas`[^canvas-dts]:
 
 ```typescript
 import type { CanvasData, CanvasTextData, CanvasFileData } from "obsidian/canvas";
 ```
+
+[^advanced-canvas-patcher]: [Advanced Canvas — MetadataCachePatcher](https://github.com/Developer-Mike/obsidian-advanced-canvas/blob/main/src/patcher/metadata-cache.ts) intercepts `computeFileMetadataAsync` to bypass the `.md` extension check, proving it exists in the original code.
+[^whitenoise-tags]: [Obsidian Forum — "The tag in the note and canvas does not connect to the graphic"](https://forum.obsidian.md/t/the-tag-in-the-note-and-canvas-does-not-connect-to-the-graphic/90892/4) — WhiteNoise, Obsidian Team member.
+[^advanced-canvas]: [Advanced Canvas plugin](https://github.com/Developer-Mike/obsidian-advanced-canvas) — provides "Full Metadata Cache Support" for canvas files via monkey-patching.
+[^jsoncanvas]: [JSON Canvas Specification v1.0](https://github.com/obsidianmd/jsoncanvas/blob/main/spec/1.0.md)
+[^canvas-dts]: [obsidian-api canvas.d.ts](https://github.com/obsidianmd/obsidian-api/blob/master/canvas.d.ts)
