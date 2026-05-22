@@ -35,20 +35,21 @@ export function getAPI(
   const registry = getGlobalRegistry();
   const existing = registry.majors.get(API_MAJOR);
 
-  const entry =
-    existing ??
-    (() => {
-      const instance = new ExtendedMetadataCache(app, options);
-      const created = {
-        instance,
-        version: VERSION,
-        apiMajor: API_MAJOR,
-        apiMinor: API_MINOR,
-        acquireCount: 0,
-      };
-      registry.majors.set(API_MAJOR, created);
-      return created;
-    })();
+  const needsNew = !existing || existing.instance.isDestroyed;
+  const entry = needsNew
+    ? (() => {
+        const instance = new ExtendedMetadataCache(app, options);
+        const created = {
+          instance,
+          version: VERSION,
+          apiMajor: API_MAJOR,
+          apiMinor: API_MINOR,
+          acquireCount: 0,
+        };
+        registry.majors.set(API_MAJOR, created);
+        return created;
+      })()
+    : existing;
 
   entry.acquireCount++;
   const capturedEntry = entry;

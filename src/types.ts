@@ -123,11 +123,16 @@ export interface ExtendedMetadataCacheAPI {
   /** Get all files that link TO the given file from frontmatter only. */
   getBacklinksFromFrontmatter(file: TFile | string): ReadonlySet<string>;
 
+  /** Get all backlink targets with their source file sets. */
+  getAllBacklinksWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
+
   /** Get all files with unresolved links matching the given name. */
   getUnresolvedBacklinks(destName: string): ReadonlySet<string>;
 
   /** Get all files that embed the given file. Accepts TFile or vault-absolute path. */
   getFilesEmbedding(file: TFile | string): ReadonlySet<string>;
+  /** Get all embed targets with their embedding file sets. */
+  getAllEmbedsWithFiles(): ReadonlyMap<string, ReadonlySet<string>>;
 
   /** Get all files that contain a heading matching the given text (case-insensitive). */
   getFilesWithHeading(heading: string): ReadonlySet<string>;
@@ -171,6 +176,9 @@ export interface ExtendedMetadataCacheAPI {
 
   off(name: string, callback: (...data: any[]) => any): void;
   offref(ref: EventRef): void;
+
+  /** Whether this instance has been destroyed. */
+  readonly isDestroyed: boolean;
 
   /** Destroy this instance and unsubscribe from all Obsidian events. */
   destroy(): void;

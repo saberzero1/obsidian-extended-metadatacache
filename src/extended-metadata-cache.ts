@@ -73,6 +73,10 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     return this._isReady;
   }
 
+  get isDestroyed(): boolean {
+    return this._destroyed;
+  }
+
   on(name: "ready", callback: () => void, ctx?: unknown): EventRef;
   on(name: "file-updated", callback: (path: string) => void, ctx?: unknown): EventRef;
   on(
@@ -389,7 +393,6 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
         if (cache) {
           this.indexFileFromCache(file.path, cache);
         }
-        this.indexFileLinks(file.path);
         this.mtimes.set(this.files.intern(file.path), file.stat.mtime);
         this.markDirty(this.files.intern(file.path), file.path);
       }
@@ -523,14 +526,6 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     this.indexTasks(fileId, cache, contrib);
   }
 
-  private indexFileLinks(path: string): void {
-    const fileId = this.files.intern(path);
-    const contrib = this.getOrCreateContributions(fileId);
-
-    this.indexBacklinks(fileId, path, contrib);
-    this.indexUnresolvedBacklinks(fileId, path, contrib);
-  }
-
   private indexTags(fileId: FileId, cache: CachedMetadata, contrib: FileContributions): void {
     const allTags = getAllTags(cache);
     if (!allTags) return;
@@ -655,18 +650,6 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
       this.blockIndex.set(blockId, fileId);
     }
     contrib.blocks = blockKeys;
-  }
-
-  private indexBacklinks(fileId: FileId, sourcePath: string, contrib: FileContributions): void {
-    const resolvedDests = this.app.metadataCache.resolvedLinks[sourcePath];
-    if (!resolvedDests) return;
-
-    const backlinkKeys = new Set<string>();
-    for (const destPath of Object.keys(resolvedDests)) {
-      backlinkKeys.add(destPath);
-      this.backlinkIndex.add(destPath, fileId);
-    }
-    contrib.backlinks = backlinkKeys;
   }
 
   private indexUnresolvedBacklinks(
@@ -979,6 +962,10 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
     return this.resolveIndex(this.frontmatterBacklinkIndex, destPath);
   }
 
+  getAllBacklinksWithFiles(): ReadonlyMap<string, ReadonlySet<string>> {
+    return this.resolveFullIndex(this.backlinkIndex);
+  }
+
   getUnresolvedBacklinks(destName: string): ReadonlySet<string> {
     return this.resolveIndex(this.unresolvedBacklinkIndex, destName.toLowerCase());
   }
@@ -986,6 +973,10 @@ export class ExtendedMetadataCache extends Events implements ExtendedMetadataCac
   getFilesEmbedding(file: TFile | string): ReadonlySet<string> {
     const destPath = typeof file === "string" ? file : file.path;
     return this.resolveIndex(this.embedIndex, destPath);
+  }
+
+  getAllEmbedsWithFiles(): ReadonlyMap<string, ReadonlySet<string>> {
+    return this.resolveFullIndex(this.embedIndex);
   }
 
   getFilesWithHeading(heading: string): ReadonlySet<string> {
