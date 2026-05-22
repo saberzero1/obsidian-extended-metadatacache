@@ -242,7 +242,7 @@ plugins:
       subdir: plugin
     enabled: true
     options:
-      theme: gummy-revived
+      theme: obsidian
       mode: both
   - source: github:quartz-community/encrypted-pages
     enabled: true
