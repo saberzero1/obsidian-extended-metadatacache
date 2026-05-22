@@ -45,6 +45,6 @@ Themes and plugins like obsidian-tasks define custom meanings for status charact
 
 These are community conventions, not Obsidian standards. The raw character is always available via [[getFilesWithTaskStatus]] and [[getAllTaskStatusesWithFiles]].
 
-[^listitem-docs]: [ListItemCache — Obsidian Developer Docs](https://obsidian-developer-docs.pages.dev/Reference/TypeScript-API/ListItemCache)
+[^listitem-docs]: [ListItemCache — Obsidian Developer Docs](https://docs.obsidian.md/Reference/TypeScript+API/ListItemCache)
 [^obsidian-css]: Obsidian's core CSS targets only `[data-task="x"]` and `[data-task="X"]` for strikethrough styling — all other non-space characters render as checked without strikethrough.
 [^dataview-task]: [Dataview markdown-file.ts — task status parsing](https://github.com/blacksmithgu/obsidian-dataview/blob/master/src/data-import/markdown-file.ts) distinguishes `checked` (any non-space) from `completed` (only `x`/`X`).

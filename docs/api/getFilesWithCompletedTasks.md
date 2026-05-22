@@ -37,4 +37,4 @@ If you need Dataview-style semantics, use `getFilesWithTaskStatus(["x", "X"])` i
 - [[getFilesWithTaskStatus]] — custom status queries
 - [[Task Status Values]] — full details
 
-[^listitem-docs]: [ListItemCache — Obsidian Developer Docs](https://obsidian-developer-docs.pages.dev/Reference/TypeScript-API/ListItemCache)
+[^listitem-docs]: [ListItemCache — Obsidian Developer Docs](https://docs.obsidian.md/Reference/TypeScript+API/ListItemCache)

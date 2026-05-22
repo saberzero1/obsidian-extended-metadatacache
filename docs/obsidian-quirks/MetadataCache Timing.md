@@ -66,7 +66,7 @@ This behavior was confirmed by:
 - obsidian-dataview plugin source[^dataview-index] (defers to `onLayoutReady`, skips null caches)
 - Direct E2E testing against Obsidian v1.12.7
 
-[^resolved-docs]: [MetadataCache.on('resolved') — Obsidian Developer Docs](https://github.com/obsidianmd/obsidian-developer-docs/blob/main/en/Reference/TypeScript%20API/MetadataCache/on('resolved').md)
-[^changed-docs]: [MetadataCache.on('changed') — Obsidian Developer Docs](https://github.com/obsidianmd/obsidian-developer-docs/blob/main/en/Reference/TypeScript%20API/MetadataCache/on('changed').md)
+[^resolved-docs]: [MetadataCache.on('resolved') — Obsidian Developer Docs](https://docs.obsidian.md/Reference/TypeScript+API/MetadataCache/on('resolved'))
+[^changed-docs]: [MetadataCache.on('changed') — Obsidian Developer Docs](https://docs.obsidian.md/Reference/TypeScript+API/MetadataCache/on('changed'))
 [^tasks-cache]: [obsidian-tasks Cache.ts — `loadedAfterFirstResolve` pattern](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/main/src/Obsidian/Cache.ts)
 [^dataview-index]: [obsidian-dataview index.ts — skips null caches, defers to `onLayoutReady`](https://github.com/blacksmithgu/obsidian-dataview/blob/master/src/data-index/index.ts)

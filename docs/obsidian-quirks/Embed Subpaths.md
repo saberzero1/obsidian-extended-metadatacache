@@ -33,4 +33,4 @@ The [[getFilesEmbedding]] method maps to the **target file**, not the specific h
 
 There is currently no "which files embed heading X of file Y" query — only "which files embed file Y".
 
-[^linkpath-docs]: [MetadataCache.getFirstLinkpathDest — Obsidian Developer Docs](https://github.com/obsidianmd/obsidian-developer-docs/blob/main/en/Reference/TypeScript%20API/MetadataCache/getFirstLinkpathDest.md) — the `linkpath` parameter is the path portion of a linktext, without subpath or display text.
+[^linkpath-docs]: [MetadataCache.getFirstLinkpathDest — Obsidian Developer Docs](https://docs.obsidian.md/Reference/TypeScript+API/MetadataCache/getFirstLinkpathDest) — the `linkpath` parameter is the path portion of a linktext, without subpath or display text.

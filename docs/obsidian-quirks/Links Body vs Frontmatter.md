@@ -49,7 +49,7 @@ Since `resolvedLinks` doesn't distinguish sources, we determine provenance by:
 
 If `related: "[[target]]"` and `see-also: "[[target]]"` both exist in the same file, `resolvedLinks` reports `count: 2` and `fmCount: 2`. Since `totalCount === fmCount`, the link is correctly classified as frontmatter-only.
 
-[^fm-links-api]: [FrontmatterLinkCache — Obsidian Developer Docs](https://github.com/obsidianmd/obsidian-developer-docs/blob/main/en/Reference/TypeScript%20API/FrontmatterLinkCache.md)
+[^fm-links-api]: [FrontmatterLinkCache — Obsidian Developer Docs](https://docs.obsidian.md/Reference/TypeScript+API/FrontmatterLinkCache)
 [^dataview-fm-links]: [Dataview PR #2030 — Add support for frontmatter links](https://github.com/blacksmithgu/obsidian-dataview/pull/2030)
 [^tasks-link-yaml]: [obsidian-tasks test data — link_in_yaml.json](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/main/tests/Obsidian/__test_data__/link_in_yaml.json)
 [^tasks-link-body]: [obsidian-tasks test data — link_in_file_body.json](https://github.com/obsidian-tasks-group/obsidian-tasks/blob/main/tests/Obsidian/__test_data__/link_in_file_body.json)
